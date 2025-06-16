@@ -1,10 +1,7 @@
 <script setup lang="ts">
-import { Badge } from '@/components/ui/badge';
-import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
+import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuBadge, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { List } from 'lucide-vue-next';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 defineProps<{
     title: string | null;
@@ -20,24 +17,14 @@ const page = usePage();
         <SidebarMenu>
             <SidebarMenuItem v-for="item in items" :key="item.title">
                 <SidebarMenuButton as-child :is-active="item.href === page.url" :tooltip="item.title">
-                    <Link :href="item.href" class="flex items-center justify-between text-[13px]" preserveState :preserveScroll="true">
-                        <TooltipProvider>
-                            <Tooltip>
-                                <TooltipTrigger class="flex min-w-0 items-center gap-1.5">
-                                    <!-- <component :is="item.icon"  /> -->
-                                    <List :size="15" class="shrink-0" :style="item.color ? { color: item.color } : undefined" />
-                                    <span class="truncate">{{ item.title }}</span>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    <p>{{ item.title }}</p>
-                                </TooltipContent>
-                            </Tooltip>
-                        </TooltipProvider>
-                        <Badge v-if="(item.count ?? 0) > 0" className="rounded-sm bg-primary text-black px-1 py-0.5 text-[10px]">{{
-                            item.count ?? 0
-                        }}</Badge>
+                    <Link :href="item.href" preserveState :preserveScroll="true">
+                        <component :is="item.icon" :style="item.color ? { color: item.color } : undefined" />
+                        <!-- <span>📊</span> -->
+                        <span>{{ item.title }}</span>
                     </Link>
                 </SidebarMenuButton>
+
+                <SidebarMenuBadge class="bg-zinc-100 dark:bg-zinc-900" v-if="item.count ?? 0">{{ item.count ?? 0 }}</SidebarMenuBadge>
             </SidebarMenuItem>
         </SidebarMenu>
     </SidebarGroup>

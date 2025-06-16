@@ -54,7 +54,7 @@ class HandleInertiaRequests extends Middleware
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'projects' => fn () => auth()->check()
                 ? Project::withCount('draftTasks')->where('user_id', $request->user()->id)
-                    ->orderBy('name')
+                    ->orderBy('id', 'desc')
                     ->get()
                 : [],
         ];

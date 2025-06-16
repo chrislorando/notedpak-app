@@ -18,7 +18,7 @@ Built with Laravel, Inertia.js (Vue), and NativePHP for mobile, NotedPak brings 
 
 ---
 
-## Instalasi
+## Instalation
 
 ```bash
 composer install

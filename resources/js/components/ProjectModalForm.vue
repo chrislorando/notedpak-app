@@ -17,10 +17,15 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus } from 'lucide-vue-next';
+import { Toaster } from '@/components/ui/sonner';
+import { Check, Plus } from 'lucide-vue-next';
+import { toast } from 'vue-sonner';
+import 'vue-sonner/style.css';
 import { SidebarGroup, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from './ui/sidebar';
 
-const passwordInput = ref<HTMLInputElement | null>(null);
+// const passwordInput = ref<HTMLInputElement | null>(null);
+
+const isDialogOpen = ref(false);
 
 const form = useForm({
     name: 'Untitled list',
@@ -34,13 +39,27 @@ const createList = (e: Event) => {
     form.post(route('projects.store'), {
         preserveScroll: true,
         preserveState: true,
-        onSuccess: () => closeModal(),
-        onError: () => passwordInput.value?.focus(),
+        onSuccess: function () {
+            console.log('SUCCESS');
+            toast.success('List has been created', {
+                description: Date().toString(),
+                icon: Check,
+                duration: 5000,
+                action: {
+                    label: 'Ok',
+                    onClick: () => console.log('OK'),
+                },
+            });
+
+            closeModal();
+        },
+        // onError: () => passwordInput.value?.focus(),
         onFinish: () => form.reset(),
     });
 };
 
 const closeModal = () => {
+    isDialogOpen.value = false;
     form.clearErrors();
     form.reset();
 };
@@ -48,13 +67,13 @@ const closeModal = () => {
 
 <template>
     <div class="space-y-6">
-        <Dialog>
+        <Dialog :open="isDialogOpen">
             <DialogTrigger as-child>
                 <SidebarGroup class="px-0 py-0">
                     <SidebarMenu>
                         <SidebarMenuItem>
                             <SidebarMenuButton asChild>
-                                <Button variant="ghost" class="justify-start gap-2">
+                                <Button variant="ghost" class="justify-start gap-2" @click="isDialogOpen = true">
                                     <Plus />
                                     <span>New List</span>
                                 </Button>
@@ -111,5 +130,7 @@ const closeModal = () => {
                 </form>
             </DialogContent>
         </Dialog>
+
+        <Toaster richColors />
     </div>
 </template>

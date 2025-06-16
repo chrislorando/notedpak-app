@@ -99,7 +99,7 @@ function bookmark(uuid: string) {
         <div class="flex h-full w-full flex-1 flex-col gap-1 rounded-xl p-4" style="width: 100%">
             <div class="relative h-screen overflow-hidden">
                 <div
-                    class="absolute top-0 right-0 left-0 flex items-center rounded-sm border bg-zinc-900 px-4 py-3 text-sm font-semibold shadow backdrop-blur-sm"
+                    class="absolute top-0 right-0 left-0 flex items-center rounded-sm border px-4 py-3 text-sm font-semibold shadow backdrop-blur-sm dark:bg-zinc-900"
                 >
                     <form @submit.prevent="add" class="flex w-full items-center space-x-2 rounded-md">
                         <Input
@@ -122,7 +122,7 @@ function bookmark(uuid: string) {
                                 class="mb-1 flex items-center justify-between rounded-sm border p-5 shadow dark:bg-zinc-900"
                             >
                                 <div class="flex items-start space-x-2">
-                                    <Checkbox @update:model-value="complete(item.uuid)" class="border-green-400" />
+                                    <Checkbox @update:model-value="complete(item.uuid)" class="rounded-2xl border-green-400" />
                                     <label class="text-sm leading-4 font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                                         {{ item.description }}
                                     </label>
@@ -152,7 +152,12 @@ function bookmark(uuid: string) {
                                         class="mb-1 flex items-center justify-between rounded-sm border p-5 shadow dark:bg-zinc-900"
                                     >
                                         <div class="flex items-start space-x-3">
-                                            <Checkbox :id="`task-${item.id}`" :default-value="true" @update:model-value="complete(item.uuid)" />
+                                            <Checkbox
+                                                class="rounded-2xl"
+                                                :id="`task-${item.id}`"
+                                                :default-value="true"
+                                                @update:model-value="complete(item.uuid)"
+                                            />
                                             <label
                                                 :for="`task-${item.id}`"
                                                 class="text-sm leading-4 font-medium line-through peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
