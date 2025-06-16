@@ -1,4 +1,4 @@
-# FMS – NOTEDPAK
+# NOTEDPAK
 
 NotedPak is a to-do list app inspired by the spirit of discipline and accountability. In Indonesian culture, saying "Noted, Pak!" means "Understood, Sir!" — a respectful way to acknowledge and accept a task without question or rejection.
 
