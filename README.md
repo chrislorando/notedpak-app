@@ -22,11 +22,11 @@ This project serves both as a learning medium to deepen my understanding of mode
 
 ## Features
 
-✅ Task Management: Create, edit, delete, and mark tasks as complete
-📱 Cross-Platform: Seamless experience across web and mobile devices
-🎯 Discipline-Focused: UI/UX designed to promote accountability and task completion
-🌐 Responsive Design: Works perfectly on desktop, tablet, and mobile
-📊 Progress Tracking: Monitor your productivity and task completion rates
+✅ Task Management: Create, edit, delete, and mark tasks as complete  
+📱 Cross-Platform: Seamless experience across web and mobile devices  
+🎯 Discipline-Focused: UI/UX designed to promote accountability and task completion  
+🌐 Responsive Design: Works perfectly on desktop, tablet, and mobile  
+📊 Progress Tracking: Monitor your productivity and task completion rates  
 🔄 Real-time Sync: Keep your tasks synchronized across all devices
 
 ---
