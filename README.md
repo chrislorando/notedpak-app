@@ -15,6 +15,7 @@ This project serves both as a learning medium to deepen my understanding of mode
 - Laravel - Modern PHP framework for backend development
 - Inertia.js - Bridging Laravel with modern frontend
 - Vue.js - Progressive JavaScript framework for UI
+- Tailwind CSS - Utility-first CSS framework
 - NativePHP - Cross-platform mobile development from web codebase
 - Full-stack Architecture - Seamless web-to-mobile development workflow
 
