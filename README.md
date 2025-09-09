@@ -1,5 +1,7 @@
 # NOTEDPAK
 
+![image](https://github.com/user-attachments/assets/6d56b119-c986-47c7-a3b4-f091fc5cbfd1)
+
 NotedPak is a to-do list app inspired by the spirit of discipline and accountability. In Indonesian culture, saying "Noted, Pak!" means "Understood, Sir!" — a respectful way to acknowledge and accept a task without question or rejection.
 
 This app is designed for unrejected work — the tasks you must complete because they come from your boss, team lead, or client. Whether you're tracking assignments, delegations, or follow-ups, NotedPak helps you stay organized, responsible, and on track.

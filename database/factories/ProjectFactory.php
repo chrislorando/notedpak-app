@@ -17,7 +17,13 @@ class ProjectFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
+            'name' => fake()->randomElement([
+                'Website Redesign',
+                'Mobile App Development',
+                'Marketing Campaign',
+                'Database Migration',
+                'Research & Analysis',
+            ]),
             'uuid' => fake()->uuid(),
             'description' => fake()->text(),
             'color' => fake()->hexColor(),

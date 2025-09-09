@@ -20,7 +20,7 @@ class TaskFactory extends Factory
             'uuid' => fake()->uuid(),
             'description' => fake()->sentence(),
             'project_id' => rand( 1, 10),
-            'user_id' => 1,
+            'owner_id' => 1,
             'created_at' => fake()->dateTimeBetween('-2 week', 'now'),
             'completed_at' => fake()->dateTimeBetween('-1 week', 'now'),
         ];
