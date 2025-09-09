@@ -8,6 +8,7 @@ export interface Auth {
 export interface BreadcrumbItem {
     title: string;
     href: string;
+    color?: string | null;
 }
 
 export interface NavItem {

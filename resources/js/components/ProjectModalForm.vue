@@ -45,10 +45,10 @@ const createList = (e: Event) => {
                 description: Date().toString(),
                 icon: Check,
                 duration: 5000,
-                action: {
-                    label: 'Ok',
-                    onClick: () => console.log('OK'),
-                },
+                // action: {
+                //     label: 'Ok',
+                //     onClick: () => console.log('OK'),
+                // },
             });
 
             closeModal();
@@ -56,6 +56,12 @@ const createList = (e: Event) => {
         // onError: () => passwordInput.value?.focus(),
         onFinish: () => form.reset(),
     });
+};
+
+const openModal = () => {
+    isDialogOpen.value = true;
+    form.clearErrors();
+    form.reset();
 };
 
 const closeModal = () => {
@@ -67,13 +73,13 @@ const closeModal = () => {
 
 <template>
     <div class="space-y-6">
-        <Dialog :open="isDialogOpen">
+        <Dialog v-model:open="isDialogOpen">
             <DialogTrigger as-child>
                 <SidebarGroup class="px-0 py-0">
                     <SidebarMenu>
                         <SidebarMenuItem>
                             <SidebarMenuButton asChild>
-                                <Button variant="ghost" class="justify-start gap-2" @click="isDialogOpen = true">
+                                <Button variant="ghost" class="justify-start gap-2">
                                     <Plus />
                                     <span>New List</span>
                                 </Button>
@@ -122,7 +128,7 @@ const closeModal = () => {
 
                     <DialogFooter class="gap-2">
                         <DialogClose as-child>
-                            <Button variant="secondary" @click="closeModal"> Cancel </Button>
+                            <Button variant="secondary"> Cancel </Button>
                         </DialogClose>
 
                         <Button type="submit" variant="default" :disabled="form.processing"> Create List </Button>
@@ -131,6 +137,6 @@ const closeModal = () => {
             </DialogContent>
         </Dialog>
 
-        <Toaster richColors />
+        <Toaster richColors closeButton theme="dark" />
     </div>
 </template>

@@ -6,6 +6,18 @@ This app is designed for unrejected work — the tasks you must complete because
 
 Built with Laravel, Inertia.js (Vue), and NativePHP for mobile, NotedPak brings a seamless experience across web and mobile to ensure your tasks are always within reach — and never forgotten.
 
+This project serves both as a learning medium to deepen my understanding of modern web development technologies and as a showcase piece for my professional portfolio.
+
+---
+
+## Tech Stack
+
+- Laravel - Modern PHP framework for backend development
+- Inertia.js - Bridging Laravel with modern frontend
+- Vue.js - Progressive JavaScript framework for UI
+- NativePHP - Cross-platform mobile development from web codebase
+- Full-stack Architecture - Seamless web-to-mobile development workflow
+
 ---
 
 ## Requirements
@@ -17,6 +29,22 @@ Built with Laravel, Inertia.js (Vue), and NativePHP for mobile, NotedPak brings 
 - SQLLITE
 
 ---
+
+## Set up env
+
+```bash
+touch database/database.sqlite
+
+Update .env with:
+DB_CONNECTION=sqlite
+DB_DATABASE=/absolute/path/to/your/project/database/database.sqlite
+
+# For NativePHP build
+NATIVEPHP_APP_ID=xxx.xxxx.xxx
+NATIVEPHP_APP_VERSION="DEBUG"
+NATIVEPHP_APP_VERSION_CODE="1"
+
+```
 
 ## Instalation
 

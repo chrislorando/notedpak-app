@@ -40,6 +40,7 @@ watch(
                 {
                     title: project.name,
                     href: `/projects/${project.uuid}`,
+                    color: project.color,
                 },
             ];
 
@@ -110,11 +111,13 @@ function bookmark(uuid: string) {
                             class="light:text-zinc-100 flex-1 border-none px-4 py-5"
                             v-model="form.description"
                         />
-                        <Button type="submit" class="bg-primary py-5" variant="default" :disabled="isDisabled"> Add </Button>
+                        <Button type="submit" class="bg-primary py-5" :style="{ background: project.color }" variant="default" :disabled="isDisabled">
+                            Add
+                        </Button>
                     </form>
                 </div>
                 <div class="flex h-screen flex-col divide-y divide-gray-200 overflow-auto">
-                    <div class="flex flex-col gap-2 pe-2 pt-20 pb-24">
+                    <div class="flex flex-col gap-2 pt-20 pb-24">
                         <ul>
                             <li
                                 v-bind:key="item.id"
@@ -122,7 +125,11 @@ function bookmark(uuid: string) {
                                 class="mb-1 flex items-center justify-between rounded-sm border p-5 shadow dark:bg-zinc-900"
                             >
                                 <div class="flex items-start space-x-2">
-                                    <Checkbox @update:model-value="complete(item.uuid)" class="rounded-2xl border-green-400" />
+                                    <Checkbox
+                                        @update:model-value="complete(item.uuid)"
+                                        class="rounded-2xl border-foreground"
+                                        :style="{ borderColor: project.color }"
+                                    />
                                     <label class="text-sm leading-4 font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                                         {{ item.description }}
                                     </label>
@@ -137,7 +144,7 @@ function bookmark(uuid: string) {
                         <Collapsible :default-open="completedTasks.length > 0" :hidden="completedTasks.length === 0" class="mt-1 w-full space-y-3">
                             <div class="flex w-35 items-center space-x-0">
                                 <CollapsibleTrigger asChild>
-                                    <Button variant="default" size="sm">
+                                    <Button variant="default" size="sm" :style="{ background: project.color }">
                                         <h4 class="text-sm font-semibold">Completed {{ completedTasks.length }}</h4>
                                         <ChevronsUpDown class="h-4 w-4" />
                                         <span class="sr-only">Toggle</span>
@@ -157,6 +164,7 @@ function bookmark(uuid: string) {
                                                 :id="`task-${item.id}`"
                                                 :default-value="true"
                                                 @update:model-value="complete(item.uuid)"
+                                                :style="{ borderColor: project.color, background: project.color }"
                                             />
                                             <label
                                                 :for="`task-${item.id}`"
