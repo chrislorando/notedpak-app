@@ -338,7 +338,7 @@ function submitSort() {
     </AppLayout>
 
     <Sheet v-model:open="openTaskSheet">
-        <SheetContent>
+        <SheetContent class="sm:w-full">
             <SheetHeader>
                 <SheetTitle>Edit task</SheetTitle>
             </SheetHeader>
