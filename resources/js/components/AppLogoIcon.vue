@@ -22,8 +22,9 @@ defineProps<Props>();
         />
     </svg> -->
 
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" :class="className" v-bind="$attrs">
+    <!-- <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" :class="className" v-bind="$attrs">
         <path d="M16 12v40h6V28l20 24h6V12h-6v28L22 12h-6Z" fill="#444444" opacity="0.2" />
         <path d="M12 12v40h6V26l20 26h6V12h-6v24L18 12h-6Z" fill="currentColor" />
-    </svg>
+    </svg> -->
+    <img src="/icon.png" class="rounded-lg" />
 </template>
