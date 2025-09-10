@@ -22,8 +22,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Route::resource('tasks', TaskController::class);
     Route::get('tasks/{uuid}', [TaskController::class, 'index'])->name('tasks.show');
     Route::post('tasks', [TaskController::class, 'store']);
+    Route::put('tasks/{id}', [TaskController::class, 'update'])->name('tasks.update');
     Route::patch('tasks/complete/{id}', [TaskController::class, 'complete'])->name('tasks.complete');
     Route::patch('tasks/bookmark/{id}', [TaskController::class, 'bookmark'])->name('tasks.bookmark');
+    Route::delete('tasks/{id}', [TaskController::class, 'destroy'])->name('tasks.destroy');
 });
 
 require __DIR__.'/settings.php';

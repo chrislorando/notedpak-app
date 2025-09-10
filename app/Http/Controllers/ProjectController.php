@@ -6,6 +6,7 @@ use App\Models\Project;
 use App\Models\Task;
 use Cache;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class ProjectController extends Controller
@@ -117,19 +118,25 @@ class ProjectController extends Controller
     public function update(Request $request, string $id)
     {
         $request->validate([
-            'name' => 'required|min:2|unique:projects,name,'.$id.',id,user_id,'.auth()->user()->id,
+            'name' => [
+                'required',
+                'min:2',
+                Rule::unique('projects')->ignore($id, 'uuid')->where(function ($query) {
+                    $query->where('user_id', auth()->id());
+                }),
+            ],
             'description' => 'required|string|max:1000',
             'color' => 'nullable|string|max:1000',
         ]);
 
        
-        $model = auth()->user()->projects()->where('id', $id)->firstOrFail();
+        $model = auth()->user()->projects()->where('uuid', $id)->firstOrFail();
         $model->name = $request->name;
         $model->description = $request->description;
         $model->color = $request->color;
         $model->save();
 
-        return redirect()->route('projects.show', $model->uuid)->with('success', 'Project created successfully.');
+        return redirect()->route('projects.show', $model->uuid)->with('success', 'Project updated successfully.');
     }
 
     /**

@@ -84,7 +84,7 @@ watch(
 
         <SidebarFooter>
             <!-- <NavFooter :items="footerNavItems" /> -->
-            <ProjectModalForm />
+            <ProjectModalForm :is-new-record="true" />
             <NavUser />
         </SidebarFooter>
     </Sidebar>

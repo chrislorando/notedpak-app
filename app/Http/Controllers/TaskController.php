@@ -13,9 +13,11 @@ class TaskController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(string $uuid)
+    public function index(Request $request, string $uuid)
     {
-
+        $sortBy = $request->query('sort') ?? 'description';
+        $sortOrder = $sortBy=='is_important' ? 'desc' : 'asc';
+  
         $project = auth()->user()->projects()->where('uuid', $uuid)->firstOrFail();
 
         Inertia::share([
@@ -35,8 +37,8 @@ class TaskController extends Controller
 
         return Inertia::render('tasks/Index', [
             'project' => $project,
-            'draftTasks' => $project->tasks()->draft()->orderBy('id', 'desc')->get(),
-            'completedTasks' => $project->tasks()->completed()->orderBy('description')->get(),
+            'draftTasks' => $project->tasks()->draft()->orderBy($sortBy, $sortOrder)->get(),
+            'completedTasks' => $project->tasks()->completed()->orderBy($sortBy, $sortOrder)->get(),
            
         ]);
     }
@@ -132,10 +134,8 @@ class TaskController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        // dd( $request->all());
         $request->validate([
             'description' => 'required|string',
-            // 'uuid' => 'required|string',
         ]);
 
 
@@ -159,18 +159,18 @@ class TaskController extends Controller
     }
 
     
-    public function complete(Request $request, string $id)
+    public function complete(string $id)
     {
-        $task = Task::where('uuid', $request->uuid)->firstOrFail();
+        $task = Task::where('uuid', $id)->firstOrFail();
         $task->is_completed = !$task->is_completed;
         $task->save();
 
         // return redirect()->route('tasks.show', $id)->with('success', 'Task has been completed.');
     }
 
-    public function bookmark(Request $request, string $id)
+    public function bookmark(string $id)
     {
-        $task = Task::where('uuid', $request->uuid)->firstOrFail();
+        $task = Task::where('uuid', $id)->firstOrFail();
         $task->is_important = !$task->is_important;
         $task->save();
 

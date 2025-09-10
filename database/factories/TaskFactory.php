@@ -22,7 +22,7 @@ class TaskFactory extends Factory
             'project_id' => rand( 1, 10),
             'owner_id' => 1,
             'created_at' => fake()->dateTimeBetween('-2 week', 'now'),
-            'completed_at' => fake()->dateTimeBetween('-1 week', 'now'),
+            // 'completed_at' => fake()->dateTimeBetween('-1 week', 'now'),
         ];
     }
 }

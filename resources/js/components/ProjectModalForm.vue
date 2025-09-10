@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 
 // Components
 import InputError from '@/components/InputError.vue';
@@ -18,19 +18,37 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Toaster } from '@/components/ui/sonner';
-import { Check, Plus } from 'lucide-vue-next';
+import { Check, Edit, Plus } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
 import 'vue-sonner/style.css';
 import { SidebarGroup, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from './ui/sidebar';
 
 // const passwordInput = ref<HTMLInputElement | null>(null);
 
+const props = defineProps<{
+    isNewRecord?: boolean;
+    data?: any;
+}>();
+
 const isDialogOpen = ref(false);
 
 const form = useForm({
+    uuid: '',
     name: 'Untitled list',
     description: '',
     color: '#ffffff',
+});
+
+watch(isDialogOpen, (open) => {
+    if (open && props.data) {
+        form.uuid = props.data.uuid ?? '';
+        form.name = props.data.name ?? '';
+        form.description = props.data.description ?? '';
+        form.color = props.data.color ?? '#ffffff';
+    } else {
+        form.clearErrors();
+        form.reset();
+    }
 });
 
 const createList = (e: Event) => {
@@ -58,11 +76,33 @@ const createList = (e: Event) => {
     });
 };
 
-const openModal = () => {
-    isDialogOpen.value = true;
-    form.clearErrors();
-    form.reset();
+const editList = (e: Event) => {
+    e.preventDefault();
+
+    form.put(route('projects.update', form.uuid), {
+        preserveScroll: true,
+        preserveState: true,
+        onSuccess: function () {
+            console.log('SUCCESS');
+            toast.success('List has been updated', {
+                description: Date().toString(),
+                icon: Check,
+                duration: 5000,
+            });
+
+            closeModal();
+        },
+    });
 };
+
+function handleSubmit(e: Event) {
+    console.log('isNewRecord', props.isNewRecord);
+    if (props.isNewRecord) {
+        createList(e);
+    } else {
+        editList(e);
+    }
+}
 
 const closeModal = () => {
     isDialogOpen.value = false;
@@ -72,10 +112,10 @@ const closeModal = () => {
 </script>
 
 <template>
-    <div class="space-y-6">
+    <div class="space-y-3">
         <Dialog v-model:open="isDialogOpen">
             <DialogTrigger as-child>
-                <SidebarGroup class="px-0 py-0">
+                <SidebarGroup class="px-0 py-0" v-if="props.isNewRecord">
                     <SidebarMenu>
                         <SidebarMenuItem>
                             <SidebarMenuButton asChild>
@@ -87,12 +127,22 @@ const closeModal = () => {
                         </SidebarMenuItem>
                     </SidebarMenu>
                 </SidebarGroup>
+
+                <Button variant="ghost" class="gap-2" v-if="!props.isNewRecord">
+                    <Edit />
+                    <span>Edit List</span>
+                </Button>
             </DialogTrigger>
             <DialogContent>
-                <form class="space-y-6" @submit.prevent="createList">
-                    <DialogHeader class="space-y-3">
+                <form class="space-y-6" @submit.prevent="handleSubmit">
+                    <DialogHeader class="space-y-3" v-if="props.isNewRecord">
                         <DialogTitle>New list</DialogTitle>
                         <DialogDescription>Make a new list, project or group activity.</DialogDescription>
+                    </DialogHeader>
+
+                    <DialogHeader class="space-y-3" v-if="!props.isNewRecord">
+                        <DialogTitle>Edit list</DialogTitle>
+                        <DialogDescription>Modify list, project or group activity.</DialogDescription>
                     </DialogHeader>
 
                     <div class="grid gap-4 py-4">
@@ -131,7 +181,8 @@ const closeModal = () => {
                             <Button variant="secondary"> Cancel </Button>
                         </DialogClose>
 
-                        <Button type="submit" variant="default" :disabled="form.processing"> Create List </Button>
+                        <Button type="submit" variant="default" :disabled="form.processing" v-if="props.isNewRecord"> Create List </Button>
+                        <Button type="submit" variant="default" :disabled="form.processing" v-if="!props.isNewRecord"> Update List </Button>
                     </DialogFooter>
                 </form>
             </DialogContent>
