@@ -56,6 +56,7 @@ const sort = ref('description');
 
 const form = useForm({
     description: '',
+    note: '',
     project_uuid: '',
 });
 
@@ -343,7 +344,7 @@ function submitSort() {
                 <SheetTitle>Edit task</SheetTitle>
             </SheetHeader>
 
-            <div class="mb-1 flex w-full items-center justify-between rounded-sm p-2 shadow">
+            <div class="flex w-full items-center justify-between rounded-sm p-2 shadow dark:bg-zinc-900">
                 <Checkbox
                     @click.stop
                     @update:model-value="completeTask(activeTask.uuid)"
@@ -352,21 +353,34 @@ function submitSort() {
                     :style="{ borderColor: project.color, background: activeTask.is_completed ? project.color : '' }"
                 />
 
-                <form @submit.prevent="editTask(activeTask.uuid)" class="flex-1">
+                <div class="flex-1">
                     <Textarea
                         id="description"
                         autocomplete="off"
                         class="min-h-[0px] w-full resize-none border-0"
                         name="description"
                         v-model="form.description"
-                        @keyup.enter.prevent="editTask(activeTask.uuid)"
+                        @keyup.prevent="editTask(activeTask.uuid)"
                         autoComplete="off"
                     />
-                </form>
+                </div>
 
                 <button type="button" class="ms-2 text-gray-400 hover:text-yellow-500" @click.stop="bookmarkTask(activeTask.uuid)">
                     <Star :size="18" :fill="activeTask.is_important ? '#facc15' : ''" />
                 </button>
+            </div>
+
+            <div class="mb-1 flex w-full items-center justify-between rounded-sm p-2 shadow dark:bg-zinc-900">
+                <Textarea
+                    id="note"
+                    autocomplete="off"
+                    class="w-full resize-none"
+                    name="description"
+                    v-model="form.note"
+                    @keyup.prevent="editTask(activeTask.uuid)"
+                    autoComplete="off"
+                    placeholder="Add note"
+                />
             </div>
 
             <SheetFooter>

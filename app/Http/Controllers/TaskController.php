@@ -136,11 +136,12 @@ class TaskController extends Controller
     {
         $request->validate([
             'description' => 'required|string',
+            'note' => 'nullable|string',
         ]);
-
 
         $model = auth()->user()->tasks()->where('uuid', $id)->firstOrFail();
         $model->description = $request->description;
+        $model->note = $request->note;
         $model->save();
 
         // return redirect()->route('projects.show', $model->project->uuid)->with('success', 'Task created successfully.');
