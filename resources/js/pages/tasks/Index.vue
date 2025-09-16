@@ -639,7 +639,7 @@ const moveTask = (taskId: string) => {
                         </ComboboxTrigger>
                     </ComboboxAnchor>
 
-                    <ComboboxContent :portal="false" :force-mount="true" class="z-50">
+                    <ComboboxContent class="z-50">
                         <ComboboxList>
                             <div class="relative w-full max-w-sm items-center">
                                 <ComboboxInput
@@ -678,7 +678,7 @@ const moveTask = (taskId: string) => {
                         </ComboboxTrigger>
                     </ComboboxAnchor>
 
-                    <ComboboxContent :portal="true" :force-mount="true" class="z-50">
+                    <ComboboxContent class="z-50">
                         <ComboboxList>
                             <div class="relative w-full max-w-sm items-center">
                                 <ComboboxInput
