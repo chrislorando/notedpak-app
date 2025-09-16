@@ -55,8 +55,8 @@ import {
     Check,
     ChevronsUpDown,
     Circle,
+    CircleIcon,
     Copy,
-    Dot,
     File,
     List,
     ListEndIcon,
@@ -541,168 +541,176 @@ const moveTask = (taskId: string) => {
                 <!-- <SheetDescription> Make changes to your task here. </SheetDescription> -->
             </SheetHeader>
 
-            <div class="flex w-full items-center justify-between rounded-sm p-4 shadow dark:bg-zinc-900">
-                <Checkbox
-                    @click.stop
-                    @update:model-value="completeTask(activeTask.uuid)"
-                    class="me-4 items-center rounded-2xl border-foreground"
-                    :default-value="activeTask.is_completed ? true : false"
-                    :style="{ borderColor: project.color, background: activeTask.is_completed ? project.color : '' }"
-                />
+            <ScrollArea class="h-4/5">
+                <div class="mb-2 flex w-full items-center justify-between rounded-sm p-4 shadow dark:bg-zinc-900">
+                    <Checkbox
+                        @click.stop
+                        @update:model-value="completeTask(activeTask.uuid)"
+                        class="me-4 items-center rounded-2xl border-foreground"
+                        :default-value="activeTask.is_completed ? true : false"
+                        :style="{ borderColor: project.color, background: activeTask.is_completed ? project.color : '' }"
+                    />
 
-                <div class="flex-1">
-                    <Textarea
-                        id="description"
-                        autocomplete="off"
-                        :class="`${activeTask.is_completed ? 'line-through' : ''} min-h-[0px] w-full resize-none border-0`"
-                        name="description"
-                        v-model="form.description"
-                        @blur="editTask(activeTask.uuid)"
-                        @keydown.enter.prevent="editTask(activeTask.uuid)"
-                        autoComplete="off"
+                    <div class="flex-1">
+                        <Textarea
+                            id="description"
+                            autocomplete="off"
+                            :class="`${activeTask.is_completed ? 'line-through' : ''} min-h-[0px] w-full resize-none border-0`"
+                            name="description"
+                            v-model="form.description"
+                            @blur="editTask(activeTask.uuid)"
+                            @keydown.enter.prevent="editTask(activeTask.uuid)"
+                            autoComplete="off"
+                        />
+                    </div>
+
+                    <button type="button" class="ms-4 text-gray-400 hover:text-yellow-500" @click.stop="bookmarkTask(activeTask.uuid)">
+                        <Star :size="18" :fill="activeTask.is_important ? project.color : ''" />
+                    </button>
+                </div>
+
+                <div class="mb-2 flex w-full items-center justify-between rounded-sm p-2 shadow dark:bg-zinc-900">
+                    <DatePicker
+                        placeholder="Add due date"
+                        id="due_date"
+                        title="Due"
+                        class="w-full border-0"
+                        v-model="selectedDueDate"
+                        @update:modelValue="editTask(activeTask.uuid)"
                     />
                 </div>
 
-                <button type="button" class="ms-4 text-gray-400 hover:text-yellow-500" @click.stop="bookmarkTask(activeTask.uuid)">
-                    <Star :size="18" :fill="activeTask.is_important ? project.color : ''" />
-                </button>
-            </div>
-
-            <div class="flex w-full items-center justify-between rounded-sm p-2 shadow dark:bg-zinc-900">
-                <DatePicker
-                    placeholder="Add due date"
-                    id="due_date"
-                    title="Due"
-                    class="w-full border-0"
-                    v-model="selectedDueDate"
-                    @update:modelValue="editTask(activeTask.uuid)"
-                />
-            </div>
-
-            <div class="flex w-full items-center justify-between rounded-sm p-2 shadow dark:bg-zinc-900">
-                <Select :multiple="true" v-model="form.categories" @update:modelValue="editTask(activeTask.uuid)">
-                    <SelectTrigger class="w-full border-0">
-                        <div class="flex items-center gap-2">
-                            <Tag class="me-2 h-4 w-4" />
-                            <SelectValue placeholder="Select a category" />
-                        </div>
-                    </SelectTrigger>
-                    <SelectContent class="dark:bg-zinc-900">
-                        <SelectGroup>
-                            <!-- <SelectLabel>Fruits</SelectLabel> -->
-                            <!-- <SelectItem value="blue" class="text-blue-500"> <Dot /> Blue </SelectItem>
-                            <SelectItem value="green" class="text-green-500"> <Dot /> Green </SelectItem>
-                            <SelectItem value="orange" class="text-orange-500"> <Dot /> Orange </SelectItem>
-                            <SelectItem value="red" class="text-red-500"> <Dot /> Red </SelectItem>
-                            <SelectItem value="yellow" class="text-yellow-500"> <Dot /> Yellow </SelectItem> -->
-
-                            <SelectItem v-for="option in categories" :key="option.value" :value="option.value" :class="`text-${option.value}-500`">
-                                <Dot /> {{ option.label }}
-                            </SelectItem>
-                        </SelectGroup>
-                    </SelectContent>
-                </Select>
-            </div>
-
-            <div class="flex w-full items-center justify-between rounded-sm p-2 shadow dark:bg-zinc-900">
-                <div class="relative w-full max-w-sm items-center">
-                    <Input type="file" id="file" class="w-full resize-none border-0 pl-12" name="file" autoComplete="off" placeholder="Add file" />
-                    <span class="absolute inset-y-0 start-0 flex items-center justify-center px-2">
-                        <File class="ms-2 size-4 text-muted-foreground" />
-                    </span>
+                <div class="mb-2 flex w-full items-center justify-between rounded-sm p-2 shadow dark:bg-zinc-900">
+                    <Select :multiple="true" v-model="form.categories" @update:modelValue="editTask(activeTask.uuid)">
+                        <SelectTrigger class="w-full border-0">
+                            <div class="flex items-center gap-2">
+                                <Tag class="me-2 h-4 w-4" />
+                                <SelectValue placeholder="Select a category" />
+                            </div>
+                        </SelectTrigger>
+                        <SelectContent class="dark:bg-zinc-900">
+                            <SelectGroup>
+                                <!-- <SelectLabel>Fruits</SelectLabel> -->
+                                <SelectItem
+                                    v-for="option in categories"
+                                    :key="option.value"
+                                    :value="option.value"
+                                    :class="`text-${option.value}-500`"
+                                >
+                                    <CircleIcon :class="`text-${option.value}-500 h-1 w-1`" /> {{ option.label }}
+                                </SelectItem>
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
                 </div>
-            </div>
 
-            <div class="flex w-full items-center justify-between rounded-sm p-2 shadow dark:bg-zinc-900">
-                <Textarea
-                    id="note"
-                    class="w-full resize-none border-0"
-                    name="description"
-                    v-model="form.note"
-                    @blur="editTask(activeTask.uuid)"
-                    @keydown.enter.prevent="editTask(activeTask.uuid)"
-                    autoComplete="off"
-                    placeholder="Add note"
-                />
-            </div>
+                <div class="mb-2 flex w-full items-center justify-between rounded-sm p-2 shadow dark:bg-zinc-900">
+                    <div class="relative w-full max-w-sm items-center">
+                        <Input
+                            type="file"
+                            id="file"
+                            class="w-full resize-none border-0 pl-12"
+                            name="file"
+                            autoComplete="off"
+                            placeholder="Add file"
+                        />
+                        <span class="absolute inset-y-0 start-0 flex items-center justify-center px-2">
+                            <File class="ms-2 size-4 text-muted-foreground" />
+                        </span>
+                    </div>
+                </div>
 
-            <div class="flex w-full items-center justify-between rounded-sm p-2 shadow dark:bg-zinc-900">
-                <Combobox v-model="selectedList" by="label" class="w-full" @update:modelValue="copyTask(activeTask.uuid)">
-                    <ComboboxAnchor as-child>
-                        <ComboboxTrigger as-child>
-                            <Button variant="outline" class="flex w-full items-center gap-2">
-                                <Copy class="ms-1 me-2 size-4 text-muted-foreground" />
+                <div class="mb-2 flex w-full items-center justify-between rounded-sm p-2 shadow dark:bg-zinc-900">
+                    <Textarea
+                        id="note"
+                        class="w-full resize-none border-0"
+                        name="description"
+                        v-model="form.note"
+                        @blur="editTask(activeTask.uuid)"
+                        @keydown.enter.prevent="editTask(activeTask.uuid)"
+                        autoComplete="off"
+                        placeholder="Add note"
+                    />
+                </div>
 
-                                <span class="flex-1 text-left">Copy task to....</span>
-                                <ChevronsUpDown class="h-4 w-4 shrink-0 opacity-50" />
-                            </Button>
-                        </ComboboxTrigger>
-                    </ComboboxAnchor>
+                <div class="mb-2 flex w-full items-center justify-between rounded-sm p-2 shadow dark:bg-zinc-900">
+                    <Combobox v-model="selectedList" by="label" class="w-full" @update:modelValue="copyTask(activeTask.uuid)">
+                        <ComboboxAnchor as-child>
+                            <ComboboxTrigger as-child>
+                                <Button variant="outline" class="flex w-full items-center gap-2">
+                                    <Copy class="ms-1 me-2 size-4 text-muted-foreground" />
 
-                    <ComboboxContent class="z-50">
-                        <ComboboxList>
-                            <div class="relative w-full max-w-sm items-center">
-                                <ComboboxInput
-                                    @input="(e: any) => searchLists(e.target.value)"
-                                    class="h-10 rounded-none border-0 border-b focus-visible:ring-0"
-                                    placeholder="Select list..."
-                                />
-                            </div>
+                                    <span class="flex-1 text-left">Copy task to....</span>
+                                    <ChevronsUpDown class="h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                            </ComboboxTrigger>
+                        </ComboboxAnchor>
 
-                            <ComboboxEmpty> No lists found. </ComboboxEmpty>
+                        <ComboboxContent class="z-50">
+                            <ComboboxList>
+                                <div class="relative w-full max-w-sm items-center">
+                                    <ComboboxInput
+                                        @input="(e: any) => searchLists(e.target.value)"
+                                        class="h-10 rounded-none border-0 border-b focus-visible:ring-0"
+                                        placeholder="Select list..."
+                                    />
+                                </div>
 
-                            <ComboboxGroup>
-                                <ComboboxItem v-for="list in lists" :key="'copy_' + list.id" :value="list.id">
-                                    <List />
-                                    {{ list.name }}
-                                    <ComboboxItemIndicator>
-                                        <Check :class="cn('ml-auto h-4 w-4')" />
-                                    </ComboboxItemIndicator>
-                                </ComboboxItem>
-                            </ComboboxGroup>
-                        </ComboboxList>
-                    </ComboboxContent>
-                </Combobox>
-            </div>
+                                <ComboboxEmpty> No lists found. </ComboboxEmpty>
 
-            <div class="flex w-full items-center justify-between rounded-sm p-2 shadow dark:bg-zinc-900">
-                <Combobox v-model="selectedList" by="label" class="w-full" @update:modelValue="moveTask(activeTask.uuid)">
-                    <ComboboxAnchor as-child>
-                        <ComboboxTrigger as-child>
-                            <Button variant="outline" class="flex w-full items-center gap-2">
-                                <ListEndIcon class="ms-1 me-2 size-4 text-muted-foreground" />
+                                <ComboboxGroup>
+                                    <ComboboxItem v-for="list in lists" :key="'copy_' + list.id" :value="list.id">
+                                        <List />
+                                        {{ list.name }}
+                                        <ComboboxItemIndicator>
+                                            <Check :class="cn('ml-auto h-4 w-4')" />
+                                        </ComboboxItemIndicator>
+                                    </ComboboxItem>
+                                </ComboboxGroup>
+                            </ComboboxList>
+                        </ComboboxContent>
+                    </Combobox>
+                </div>
 
-                                <span class="flex-1 text-left">Move task to....</span>
-                                <ChevronsUpDown class="h-4 w-4 shrink-0 opacity-50" />
-                            </Button>
-                        </ComboboxTrigger>
-                    </ComboboxAnchor>
+                <div class="flex w-full items-center justify-between rounded-sm p-2 shadow dark:bg-zinc-900">
+                    <Combobox v-model="selectedList" by="label" class="w-full" @update:modelValue="moveTask(activeTask.uuid)">
+                        <ComboboxAnchor as-child>
+                            <ComboboxTrigger as-child>
+                                <Button variant="outline" class="flex w-full items-center gap-2">
+                                    <ListEndIcon class="ms-1 me-2 size-4 text-muted-foreground" />
 
-                    <ComboboxContent class="z-50">
-                        <ComboboxList>
-                            <div class="relative w-full max-w-sm items-center">
-                                <ComboboxInput
-                                    @input="(e: any) => searchLists(e.target.value)"
-                                    class="h-10 rounded-none border-0 border-b focus-visible:ring-0"
-                                    placeholder="Select list..."
-                                />
-                            </div>
+                                    <span class="flex-1 text-left">Move task to....</span>
+                                    <ChevronsUpDown class="h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                            </ComboboxTrigger>
+                        </ComboboxAnchor>
 
-                            <ComboboxEmpty> No lists found. </ComboboxEmpty>
+                        <ComboboxContent class="z-50">
+                            <ComboboxList>
+                                <div class="relative w-full max-w-sm items-center">
+                                    <ComboboxInput
+                                        @input="(e: any) => searchLists(e.target.value)"
+                                        class="h-10 rounded-none border-0 border-b focus-visible:ring-0"
+                                        placeholder="Select list..."
+                                    />
+                                </div>
 
-                            <ComboboxGroup>
-                                <ComboboxItem v-for="list in lists" :key="'move_' + list.id" :value="list.id">
-                                    <List />
-                                    {{ list.name }}
-                                    <ComboboxItemIndicator>
-                                        <Check :class="cn('ml-auto h-4 w-4')" />
-                                    </ComboboxItemIndicator>
-                                </ComboboxItem>
-                            </ComboboxGroup>
-                        </ComboboxList>
-                    </ComboboxContent>
-                </Combobox>
-            </div>
+                                <ComboboxEmpty> No lists found. </ComboboxEmpty>
+
+                                <ComboboxGroup>
+                                    <ComboboxItem v-for="list in lists" :key="'move_' + list.id" :value="list.id">
+                                        <List />
+                                        {{ list.name }}
+                                        <ComboboxItemIndicator>
+                                            <Check :class="cn('ml-auto h-4 w-4')" />
+                                        </ComboboxItemIndicator>
+                                    </ComboboxItem>
+                                </ComboboxGroup>
+                            </ComboboxList>
+                        </ComboboxContent>
+                    </Combobox>
+                </div>
+            </ScrollArea>
 
             <SheetFooter class="!flex !flex-row !items-center !justify-between !space-y-0">
                 <SheetClose as-child>
