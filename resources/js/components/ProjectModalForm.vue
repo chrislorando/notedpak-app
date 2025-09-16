@@ -17,7 +17,6 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Toaster } from '@/components/ui/sonner';
 import { Check, Edit, Plus } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
 import 'vue-sonner/style.css';
@@ -188,6 +187,6 @@ const closeModal = () => {
             </DialogContent>
         </Dialog>
 
-        <Toaster richColors closeButton theme="dark" />
+        <!-- <Toaster richColors closeButton theme="dark" /> -->
     </div>
 </template>

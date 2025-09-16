@@ -7,6 +7,7 @@ use App\Models\Task;
 use Cache;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Str;
 
 class TaskController extends Controller
 {
@@ -16,9 +17,12 @@ class TaskController extends Controller
     public function index(Request $request, string $uuid)
     {
         $sortBy = $request->query('sort') ?? 'description';
-        $sortOrder = $sortBy=='is_important' ? 'desc' : 'asc';
+        $sortOrder = $sortBy=='description' ? 'asc' : 'desc';
   
         $project = auth()->user()->projects()->where('uuid', $uuid)->firstOrFail();
+        $projects = auth()->user()->projects()
+        ->limit(value: 10)
+        ->get();
 
         Inertia::share([
             'project' => fn () => [
@@ -32,6 +36,7 @@ class TaskController extends Controller
                 'updated_at' => $project->updated_at,
                 'uuid' => $project->uuid,
             ],
+            'listOptions' => $projects
         ]);
     
 
@@ -137,11 +142,13 @@ class TaskController extends Controller
         $request->validate([
             'description' => 'required|string',
             'note' => 'nullable|string',
+            'due_date' => 'nullable|',
         ]);
 
         $model = auth()->user()->tasks()->where('uuid', $id)->firstOrFail();
         $model->description = $request->description;
         $model->note = $request->note;
+        $model->due_date = $request->due_date;
         $model->save();
 
         // return redirect()->route('projects.show', $model->project->uuid)->with('success', 'Task created successfully.');
@@ -176,5 +183,45 @@ class TaskController extends Controller
         $task->save();
 
         // return redirect()->route('tasks.show', $id)->with('success', 'Task has been completed.');
+    }
+
+    public function searchListOptions(Request $request)
+    {
+        $projects = auth()->user()->projects()
+        ->when($request->search, fn ($q, $search) =>
+            $q->where('name', 'like', "%{$search}%")
+        )
+        ->limit(20)
+        ->get();
+
+        return response()->json($projects);
+    }
+
+    public function copyTask(Request $request, $id)
+    {
+        $task = Task::where('uuid', $id)->firstOrFail();
+
+        $copy = $task->replicate();
+
+        $copy->project_id = $request->project_id;
+        $copy->uuid = Str::uuid();
+        $copy->created_at = now();
+        $copy->updated_at = now();
+        $copy->save();
+    }
+
+    public function moveTask(Request $request, $id)
+    {
+        $task = Task::where('uuid', $id)->firstOrFail();
+
+        $copy = $task->replicate();
+
+        $copy->project_id = $request->project_id;
+        $copy->uuid = Str::uuid();
+        $copy->created_at = now();
+        $copy->updated_at = now();
+        $copy->save();
+
+        $task->delete();
     }
 }

@@ -13,6 +13,18 @@ import AlertDialogTrigger from '@/components/ui/alert-dialog/AlertDialogTrigger.
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import {
+    Combobox,
+    ComboboxAnchor,
+    ComboboxEmpty,
+    ComboboxGroup,
+    ComboboxInput,
+    ComboboxItem,
+    ComboboxItemIndicator,
+    ComboboxList,
+    ComboboxTrigger,
+} from '@/components/ui/combobox';
+
 import DropdownMenu from '@/components/ui/dropdown-menu/DropdownMenu.vue';
 import DropdownMenuContent from '@/components/ui/dropdown-menu/DropdownMenuContent.vue';
 import DropdownMenuLabel from '@/components/ui/dropdown-menu/DropdownMenuLabel.vue';
@@ -24,16 +36,36 @@ import { Input } from '@/components/ui/input';
 import ScrollArea from '@/components/ui/scroll-area/ScrollArea.vue';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Sheet from '@/components/ui/sheet/Sheet.vue';
+import SheetClose from '@/components/ui/sheet/SheetClose.vue';
 import SheetContent from '@/components/ui/sheet/SheetContent.vue';
 import SheetFooter from '@/components/ui/sheet/SheetFooter.vue';
 import SheetHeader from '@/components/ui/sheet/SheetHeader.vue';
 import SheetTitle from '@/components/ui/sheet/SheetTitle.vue';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { dateValueToString, stringToDateValue } from '@/lib/date';
+import { cn } from '@/lib/utils';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { ArrowUpDown, CalendarDays, CalendarPlus, ChevronsUpDown, Dot, File, Star, Tag, Trash2 } from 'lucide-vue-next';
+import {
+    ArrowUpDown,
+    CalendarDays,
+    CalendarPlus,
+    Check,
+    ChevronsUpDown,
+    Copy,
+    Dot,
+    File,
+    List,
+    ListEndIcon,
+    PanelRightClose,
+    Star,
+    Tag,
+    Trash2,
+} from 'lucide-vue-next';
+import { ComboboxContent, DateValue } from 'reka-ui';
 import { computed, onMounted, ref, watch } from 'vue';
+import { toast } from 'vue-sonner';
 
 const breadcrumbs = ref<BreadcrumbItem[]>([
     {
@@ -49,17 +81,20 @@ onMounted(() => {
 });
 
 // Define props with TypeScript type
-const props = defineProps<{ project: any; draftTasks: any; completedTasks: any }>();
+const props = defineProps<{ project: any; draftTasks: any; completedTasks: any; listOptions: any }>();
 
 const initProject = ref<any>(props.project);
 const activeTask = ref();
 const openTaskSheet = ref(false);
 const sort = ref('description');
+const lists = ref<any>(props.listOptions);
+const selectedList = ref<(typeof props.listOptions)[0] | undefined>();
+const selectedDueDate = ref<DateValue>();
 
 const form = useForm({
     description: '',
     note: '',
-    due_date: '',
+    due_date: null as string | null,
     category: '',
     project_uuid: '',
 });
@@ -105,6 +140,8 @@ function addTask() {
 }
 
 function editTask(uuid: string) {
+    form.due_date = dateValueToString(selectedDueDate.value);
+    console.log('DATE', form.due_date);
     form.put(route('tasks.update', uuid), {
         preserveScroll: true,
         preserveState: true,
@@ -184,6 +221,7 @@ function setActiveTask(uuid: string) {
     const task = [...props.draftTasks, ...props.completedTasks].find((t) => t.uuid === uuid);
     activeTask.value = task;
     form.description = task.description || '';
+    selectedDueDate.value = stringToDateValue(task.due_date);
 }
 
 function showSheet(uuid: string) {
@@ -204,6 +242,66 @@ function submitSort() {
         },
     );
 }
+
+const searchLists = async (q: string) => {
+    if (!q) {
+        lists.value = props.listOptions;
+        return;
+    }
+
+    try {
+        const res = await fetch(`/tasks/search-list-options?search=${q}`);
+        lists.value = await res.json();
+    } catch (e) {
+        console.error('Search error:', e);
+    }
+};
+
+const copyTask = (taskId: string) => {
+    console.log('COPY', selectedList.value, taskId);
+    router.patch(
+        route('tasks.copy', taskId),
+        {
+            project_id: selectedList.value,
+        },
+        {
+            preserveScroll: true,
+            preserveState: true,
+            onSuccess: function (result) {
+                selectedList.value = '';
+                lists.value = props.listOptions;
+                toast.success('List has been copied', {
+                    description: Date().toString(),
+                    icon: Check,
+                    duration: 5000,
+                });
+            },
+        },
+    );
+};
+
+const moveTask = (taskId: string) => {
+    console.log('MOVE', selectedList.value, taskId);
+    router.patch(
+        route('tasks.move', taskId),
+        {
+            project_id: selectedList.value,
+        },
+        {
+            preserveScroll: true,
+            preserveState: true,
+            onSuccess: function (result) {
+                selectedList.value = '';
+                lists.value = props.listOptions;
+                toast.success('List has been moved', {
+                    description: Date().toString(),
+                    icon: Check,
+                    duration: 5000,
+                });
+            },
+        },
+    );
+};
 </script>
 
 <template>
@@ -264,6 +362,7 @@ function submitSort() {
                             placeholder="Add a task"
                             class="light:text-zinc-100 flex-1 border-none px-4 py-5"
                             v-model="form.description"
+                            autocomplete="off"
                         />
                         <Button type="submit" class="bg-primary py-5" :style="{ background: project.color }" variant="default" :disabled="isDisabled">
                             Add
@@ -345,10 +444,12 @@ function submitSort() {
         </div>
     </AppLayout>
 
-    <Sheet v-model:open="openTaskSheet">
-        <SheetContent class="w-full max-w-full gap-2">
+    <Sheet v-model:open="openTaskSheet" :modal="false">
+        <div v-if="openTaskSheet" class="fixed inset-0 z-40 bg-black/70" @click="openTaskSheet = false"></div>
+        <SheetContent class="w-full max-w-full gap-2" :trap-focus="false" :disable-outside-pointer-events="false">
             <SheetHeader>
                 <SheetTitle>Edit task</SheetTitle>
+                <!-- <SheetDescription> Make changes to your task here. </SheetDescription> -->
             </SheetHeader>
 
             <div class="flex w-full items-center justify-between rounded-sm p-4 shadow dark:bg-zinc-900">
@@ -364,7 +465,7 @@ function submitSort() {
                     <Textarea
                         id="description"
                         autocomplete="off"
-                        class="min-h-[0px] w-full resize-none border-0 line-through"
+                        :class="`${activeTask.is_completed ? 'line-through' : ''} min-h-[0px] w-full resize-none border-0`"
                         name="description"
                         v-model="form.description"
                         @blur="editTask(activeTask.uuid)"
@@ -379,7 +480,13 @@ function submitSort() {
             </div>
 
             <div class="flex w-full items-center justify-between rounded-sm p-2 shadow dark:bg-zinc-900">
-                <DatePicker placeholder="Add due date" id="due_date" class="w-full border-0" v-model="form.due_date" />
+                <DatePicker
+                    placeholder="Add due date"
+                    id="due_date"
+                    class="w-full border-0"
+                    v-model="selectedDueDate"
+                    @update:modelValue="editTask(activeTask.uuid)"
+                />
             </div>
 
             <div class="flex w-full items-center justify-between rounded-sm p-2 shadow dark:bg-zinc-900">
@@ -421,7 +528,7 @@ function submitSort() {
                 </div>
             </div>
 
-            <div class="mb-1 flex w-full items-center justify-between rounded-sm p-2 shadow dark:bg-zinc-900">
+            <div class="flex w-full items-center justify-between rounded-sm p-2 shadow dark:bg-zinc-900">
                 <Textarea
                     id="note"
                     class="w-full resize-none border-0"
@@ -433,13 +540,97 @@ function submitSort() {
                 />
             </div>
 
-            <SheetFooter class="text-center">
-                <small v-if="activeTask.completed_at"> Completed on {{ activeTask.completed_at }} </small>
-                <small v-else> Created on {{ activeTask.created_at }} </small>
+            <div class="flex w-full items-center justify-between rounded-sm p-2 shadow dark:bg-zinc-900">
+                <Combobox v-model="selectedList" by="label" class="w-full" @update:modelValue="copyTask(activeTask.uuid)">
+                    <ComboboxAnchor as-child>
+                        <ComboboxTrigger as-child>
+                            <Button variant="outline" class="flex w-full items-center gap-2">
+                                <Copy class="ms-1 me-2 size-4 text-muted-foreground" />
+
+                                <span class="flex-1 text-left">Copy task to....</span>
+                                <ChevronsUpDown class="h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                        </ComboboxTrigger>
+                    </ComboboxAnchor>
+
+                    <ComboboxContent :portal="false" :force-mount="true" class="z-50">
+                        <ComboboxList>
+                            <div class="relative w-full max-w-sm items-center">
+                                <ComboboxInput
+                                    @input="(e: any) => searchLists(e.target.value)"
+                                    class="h-10 rounded-none border-0 border-b focus-visible:ring-0"
+                                    placeholder="Select list..."
+                                />
+                            </div>
+
+                            <ComboboxEmpty> No lists found. </ComboboxEmpty>
+
+                            <ComboboxGroup>
+                                <ComboboxItem v-for="list in lists" :key="'copy_' + list.id" :value="list.id">
+                                    <List />
+                                    {{ list.name }}
+                                    <ComboboxItemIndicator>
+                                        <Check :class="cn('ml-auto h-4 w-4')" />
+                                    </ComboboxItemIndicator>
+                                </ComboboxItem>
+                            </ComboboxGroup>
+                        </ComboboxList>
+                    </ComboboxContent>
+                </Combobox>
+            </div>
+
+            <div class="flex w-full items-center justify-between rounded-sm p-2 shadow dark:bg-zinc-900">
+                <Combobox v-model="selectedList" by="label" class="w-full" @update:modelValue="moveTask(activeTask.uuid)">
+                    <ComboboxAnchor as-child>
+                        <ComboboxTrigger as-child>
+                            <Button variant="outline" class="flex w-full items-center gap-2">
+                                <ListEndIcon class="ms-1 me-2 size-4 text-muted-foreground" />
+
+                                <span class="flex-1 text-left">Move task to....</span>
+                                <ChevronsUpDown class="h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                        </ComboboxTrigger>
+                    </ComboboxAnchor>
+
+                    <ComboboxContent :portal="true" :force-mount="true" class="z-50">
+                        <ComboboxList>
+                            <div class="relative w-full max-w-sm items-center">
+                                <ComboboxInput
+                                    @input="(e: any) => searchLists(e.target.value)"
+                                    class="h-10 rounded-none border-0 border-b focus-visible:ring-0"
+                                    placeholder="Select list..."
+                                />
+                            </div>
+
+                            <ComboboxEmpty> No lists found. </ComboboxEmpty>
+
+                            <ComboboxGroup>
+                                <ComboboxItem v-for="list in lists" :key="'move_' + list.id" :value="list.id">
+                                    <List />
+                                    {{ list.name }}
+                                    <ComboboxItemIndicator>
+                                        <Check :class="cn('ml-auto h-4 w-4')" />
+                                    </ComboboxItemIndicator>
+                                </ComboboxItem>
+                            </ComboboxGroup>
+                        </ComboboxList>
+                    </ComboboxContent>
+                </Combobox>
+            </div>
+
+            <SheetFooter class="!flex !flex-row !items-center !justify-between !space-y-0">
+                <SheetClose as-child>
+                    <Button type="button" variant="ghost"> <PanelRightClose /> </Button>
+                </SheetClose>
+
+                <div class="flex-1 text-center">
+                    <small v-if="activeTask.completed_at"> Completed on {{ activeTask.completed_at }} </small>
+                    <small v-else> Created on {{ activeTask.created_at }} </small>
+                </div>
 
                 <AlertDialog>
                     <AlertDialogTrigger as-child>
-                        <Button variant="destructive"> <Trash2 /> Delete </Button>
+                        <Button variant="ghost" class="cursor-pointer text-[var(--destructive)]"> <Trash2 /> </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                         <AlertDialogHeader>
@@ -454,9 +645,6 @@ function submitSort() {
                         </AlertDialogFooter>
                     </AlertDialogContent>
                 </AlertDialog>
-                <!-- <SheetClose as-child>
-                    <Button type="button" @click.stop="deleteTask(activeTask.uuid)" variant="destructive"> <Trash2 /> Delete </Button>
-                </SheetClose> -->
             </SheetFooter>
         </SheetContent>
     </Sheet>

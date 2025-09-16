@@ -20,11 +20,14 @@ Route::get('dashboard', function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('projects', ProjectController::class);
     // Route::resource('tasks', TaskController::class);
+    Route::get('tasks/search-list-options', [TaskController::class, 'searchListOptions'])->name('tasks.search-list-options');
     Route::get('tasks/{uuid}', [TaskController::class, 'index'])->name('tasks.show');
     Route::post('tasks', [TaskController::class, 'store']);
     Route::put('tasks/{id}', [TaskController::class, 'update'])->name('tasks.update');
     Route::patch('tasks/complete/{id}', [TaskController::class, 'complete'])->name('tasks.complete');
     Route::patch('tasks/bookmark/{id}', [TaskController::class, 'bookmark'])->name('tasks.bookmark');
+    Route::patch('tasks/copy/{id}', [TaskController::class, 'copyTask'])->name('tasks.copy');
+    Route::patch('tasks/move/{id}', [TaskController::class, 'moveTask'])->name('tasks.move');
     Route::delete('tasks/{id}', [TaskController::class, 'destroy'])->name('tasks.destroy');
 });
 

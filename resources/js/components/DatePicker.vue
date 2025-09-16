@@ -2,23 +2,35 @@
 import type { DateValue } from '@internationalized/date';
 import { DateFormatter, getLocalTimeZone } from '@internationalized/date';
 import { CalendarIcon } from 'lucide-vue-next';
+import { computed } from 'vue';
 
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { HTMLAttributes, ref } from 'vue';
+import type { HTMLAttributes } from 'vue';
 
 const df = new DateFormatter('en-US', {
     dateStyle: 'long',
 });
 
-const value = ref<DateValue>();
-
-const props = defineProps<{
+interface Props {
+    modelValue?: DateValue;
     class?: HTMLAttributes['class'];
     placeholder?: string;
-}>();
+}
+
+interface Emits {
+    (e: 'update:modelValue', value: DateValue | undefined): void;
+}
+
+const props = defineProps<Props>();
+const emit = defineEmits<Emits>();
+
+const value = computed({
+    get: () => props.modelValue,
+    set: (val) => emit('update:modelValue', val),
+});
 </script>
 
 <template>
