@@ -8,6 +8,7 @@ use Cache;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
+use Str;
 
 class ProjectController extends Controller
 {
@@ -179,5 +180,30 @@ class ProjectController extends Controller
         $task->save();
 
         return redirect()->route('projects.show', $id)->with('success', 'Task has been completed.');
+    }
+
+    public function copyList($id)
+    {
+        $project = Project::with(['tasks'])->where('uuid', $id)->firstOrFail();
+        $baseName = $project->name;
+        $count = Project::where('name', 'LIKE', $baseName . '%')->count();
+
+        $copy = $project->replicate();
+
+        $copy->uuid = Str::uuid();
+        $copy->name = $baseName . ' (' . $count . ')';
+        $copy->created_at = now();
+        $copy->updated_at = now();
+        $copy->save();
+
+        foreach ($project->tasks as $task) {
+            $taskCopy = $task->replicate();
+            $taskCopy->project_id = $copy->id;
+            $taskCopy->uuid = Str::uuid();
+            $taskCopy->created_at = now();
+            $taskCopy->updated_at = now();
+            $taskCopy->save();
+
+        }
     }
 }

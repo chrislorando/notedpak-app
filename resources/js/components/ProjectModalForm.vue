@@ -118,7 +118,7 @@ const closeModal = () => {
                     <SidebarMenu>
                         <SidebarMenuItem>
                             <SidebarMenuButton asChild>
-                                <Button variant="ghost" class="justify-start gap-2">
+                                <Button variant="ghost" class="cursor-pointer justify-start gap-2">
                                     <Plus />
                                     <span>New List</span>
                                 </Button>
@@ -127,9 +127,9 @@ const closeModal = () => {
                     </SidebarMenu>
                 </SidebarGroup>
 
-                <Button variant="ghost" class="gap-2" v-if="!props.isNewRecord">
+                <Button variant="ghost" class="cursor-pointer gap-2" v-if="!props.isNewRecord">
                     <Edit />
-                    <span>Edit List</span>
+                    <span class="hidden md:inline-block">Edit List</span>
                 </Button>
             </DialogTrigger>
             <DialogContent>

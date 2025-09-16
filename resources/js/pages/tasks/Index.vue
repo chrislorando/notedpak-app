@@ -43,13 +43,14 @@ import SheetHeader from '@/components/ui/sheet/SheetHeader.vue';
 import SheetTitle from '@/components/ui/sheet/SheetTitle.vue';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { dateValueToString, stringToDateValue } from '@/lib/date';
+import { customFormatDate, dateValueToString, stringToDateValue } from '@/lib/date';
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import {
     ArrowUpDown,
     CalendarDays,
+    CalendarDaysIcon,
     CalendarPlus,
     Check,
     ChevronsUpDown,
@@ -60,6 +61,7 @@ import {
     ListEndIcon,
     PanelRightClose,
     Star,
+    StickyNote,
     Tag,
     Trash2,
 } from 'lucide-vue-next';
@@ -140,7 +142,7 @@ function addTask() {
 }
 
 function editTask(uuid: string) {
-    form.due_date = dateValueToString(selectedDueDate.value);
+    form.due_date = selectedDueDate.value ? dateValueToString(selectedDueDate.value) : null;
     console.log('DATE', form.due_date);
     form.put(route('tasks.update', uuid), {
         preserveScroll: true,
@@ -221,12 +223,20 @@ function setActiveTask(uuid: string) {
     const task = [...props.draftTasks, ...props.completedTasks].find((t) => t.uuid === uuid);
     activeTask.value = task;
     form.description = task.description || '';
-    selectedDueDate.value = stringToDateValue(task.due_date);
+    form.note = task.note || '';
+    if (task.due_date) {
+        selectedDueDate.value = stringToDateValue(task.due_date);
+    }
 }
 
 function showSheet(uuid: string) {
     openTaskSheet.value = true;
     setActiveTask(uuid);
+}
+
+function hideSheet(uuid: string) {
+    editTask(uuid);
+    openTaskSheet.value = true;
 }
 
 function submitSort() {
@@ -257,6 +267,27 @@ const searchLists = async (q: string) => {
     }
 };
 
+const copyList = () => {
+    console.log('COPY', props.project);
+    router.patch(
+        route('projects.copy', props.project.uuid),
+        {},
+        {
+            preserveScroll: true,
+            preserveState: true,
+            onSuccess: function (result) {
+                selectedList.value = '';
+                lists.value = props.listOptions;
+                toast.success('List has been copied', {
+                    description: Date().toString(),
+                    icon: Check,
+                    duration: 5000,
+                });
+            },
+        },
+    );
+};
+
 const copyTask = (taskId: string) => {
     console.log('COPY', selectedList.value, taskId);
     router.patch(
@@ -270,7 +301,7 @@ const copyTask = (taskId: string) => {
             onSuccess: function (result) {
                 selectedList.value = '';
                 lists.value = props.listOptions;
-                toast.success('List has been copied', {
+                toast.success('Task has been copied', {
                     description: Date().toString(),
                     icon: Check,
                     duration: 5000,
@@ -293,7 +324,7 @@ const moveTask = (taskId: string) => {
             onSuccess: function (result) {
                 selectedList.value = '';
                 lists.value = props.listOptions;
-                toast.success('List has been moved', {
+                toast.success('Task has been moved', {
                     description: Date().toString(),
                     icon: Check,
                     duration: 5000,
@@ -310,13 +341,16 @@ const moveTask = (taskId: string) => {
         <div class="flex h-full w-full flex-1 flex-col gap-1 rounded-xl p-5" style="width: 100%">
             <div class="flex w-full items-start justify-end">
                 <ProjectModalForm :is-new-record="false" :data="initProject" />
+                <Button variant="ghost" @click="copyList" class="cursor-pointer">
+                    <Copy /> <span class="hidden md:inline-block">Duplicate</span>
+                </Button>
                 <div class="space-y-3">
                     <DropdownMenu>
                         <DropdownMenuTrigger
-                            class="inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-md px-4 py-2 text-base font-medium whitespace-nowrap transition-all outline-none hover:bg-accent hover:text-accent-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 has-[>svg]:px-3 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:hover:bg-accent/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
+                            class="inline-flex h-9 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-md px-4 py-2 text-base font-medium whitespace-nowrap transition-all outline-none hover:bg-accent hover:text-accent-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 has-[>svg]:px-3 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:hover:bg-accent/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
                         >
                             <ArrowUpDown />
-                            <span>Sort</span>
+                            <span class="hidden md:inline-block">Sort</span>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
                             <DropdownMenuLabel>Sort by</DropdownMenuLabel>
@@ -332,7 +366,9 @@ const moveTask = (taskId: string) => {
 
                     <AlertDialog>
                         <AlertDialogTrigger as-child>
-                            <Button variant="ghost" class="text-red-500"> <Trash2 /> Remove list </Button>
+                            <Button variant="ghost" class="cursor-pointer text-[var(--destructive)]">
+                                <Trash2 /> <span class="hidden md:inline-block">Remove list</span>
+                            </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                             <AlertDialogHeader>
@@ -389,6 +425,14 @@ const moveTask = (taskId: string) => {
                                 />
                                 <label class="text-sm leading-4 font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                                     {{ item.description }}
+                                    <div class="flex gap-2 text-xs">
+                                        <span v-if="item.due_date" class="mt-1 flex items-center gap-1 text-gray-400"
+                                            ><CalendarDaysIcon class="h-3.5 w-3.5" /> {{ customFormatDate(item.due_date) }}</span
+                                        >
+                                        <span v-if="item.note" class="mt-1 flex items-center gap-1 text-gray-400"
+                                            ><StickyNote class="h-3.5 w-3.5" /> Note</span
+                                        >
+                                    </div>
                                 </label>
                             </div>
 
@@ -425,10 +469,12 @@ const moveTask = (taskId: string) => {
                                             :default-value="true"
                                             :style="{ borderColor: project.color, background: project.color }"
                                         />
-                                        <label
-                                            class="text-sm leading-4 font-medium line-through peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                        >
-                                            {{ item.description }}
+                                        <label class="text-sm leading-4 font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                            <span class="line-through">{{ item.description }}</span>
+
+                                            <span v-if="item.note" class="mt-1 flex items-center gap-1 text-sm text-gray-400"
+                                                ><StickyNote class="h-4 w-4" /> Note</span
+                                            >
                                         </label>
                                     </div>
 
@@ -445,7 +491,7 @@ const moveTask = (taskId: string) => {
     </AppLayout>
 
     <Sheet v-model:open="openTaskSheet" :modal="false">
-        <div v-if="openTaskSheet" class="fixed inset-0 z-40 bg-black/70" @click="openTaskSheet = false"></div>
+        <div v-if="openTaskSheet" class="fixed inset-0 z-40 bg-black/70"></div>
         <SheetContent class="w-full max-w-full gap-2" :trap-focus="false" :disable-outside-pointer-events="false">
             <SheetHeader>
                 <SheetTitle>Edit task</SheetTitle>
@@ -483,6 +529,7 @@ const moveTask = (taskId: string) => {
                 <DatePicker
                     placeholder="Add due date"
                     id="due_date"
+                    title="Due"
                     class="w-full border-0"
                     v-model="selectedDueDate"
                     @update:modelValue="editTask(activeTask.uuid)"
@@ -512,16 +559,7 @@ const moveTask = (taskId: string) => {
 
             <div class="flex w-full items-center justify-between rounded-sm p-2 shadow dark:bg-zinc-900">
                 <div class="relative w-full max-w-sm items-center">
-                    <Input
-                        type="file"
-                        id="file"
-                        class="w-full resize-none border-0 pl-12"
-                        name="file"
-                        v-model="form.note"
-                        @keyup.prevent="editTask(activeTask.uuid)"
-                        autoComplete="off"
-                        placeholder="Add file"
-                    />
+                    <Input type="file" id="file" class="w-full resize-none border-0 pl-12" name="file" autoComplete="off" placeholder="Add file" />
                     <span class="absolute inset-y-0 start-0 flex items-center justify-center px-2">
                         <File class="ms-2 size-4 text-muted-foreground" />
                     </span>
@@ -534,7 +572,8 @@ const moveTask = (taskId: string) => {
                     class="w-full resize-none border-0"
                     name="description"
                     v-model="form.note"
-                    @keyup.prevent="editTask(activeTask.uuid)"
+                    @blur="editTask(activeTask.uuid)"
+                    @keydown.enter.prevent="editTask(activeTask.uuid)"
                     autoComplete="off"
                     placeholder="Add note"
                 />

@@ -18,6 +18,7 @@ Route::get('dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware(['auth', 'verified'])->group(function () {
+    Route::patch('projects/copy/{id}', [ProjectController::class, 'copyList'])->name('projects.copy');
     Route::resource('projects', ProjectController::class);
     // Route::resource('tasks', TaskController::class);
     Route::get('tasks/search-list-options', [TaskController::class, 'searchListOptions'])->name('tasks.search-list-options');

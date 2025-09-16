@@ -7,3 +7,13 @@ export function dateValueToString(dateValue: DateValue | undefined): string | nu
 export function stringToDateValue(dateString: string | null): DateValue | undefined {
     return dateString ? parseDate(dateString) : undefined;
 }
+
+export function customFormatDate(dateString: string): string {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+    });
+}
