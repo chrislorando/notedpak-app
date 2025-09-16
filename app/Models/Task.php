@@ -22,13 +22,15 @@ class Task extends Model
         'assignee_id',
         'is_completed',
         'is_important',
-        'completed_at'
+        'completed_at',
+        'categories'
     ];
 
     protected $casts = [
         'created_at' => 'datetime:d/m/Y H:i:s',
         'updated_at' => 'datetime:d/m/Y H:i:s',
         'completed_at' => 'datetime:d/m/Y H:i:s',
+        'categories' => 'array',
     ];
 
     protected static function booted()

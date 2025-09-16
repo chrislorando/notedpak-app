@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Category;
 use App\Models\Project;
 use App\Models\Task;
 use Cache;
@@ -36,7 +37,11 @@ class TaskController extends Controller
                 'updated_at' => $project->updated_at,
                 'uuid' => $project->uuid,
             ],
-            'listOptions' => $projects
+            'listOptions' => $projects,
+            'categoryOptions' => collect(Category::cases())->map(fn($case) => [
+                'label' => ucfirst($case->value),
+                'value' => $case->value,
+            ]),
         ]);
     
 
@@ -99,6 +104,7 @@ class TaskController extends Controller
                 'delete_url'=> route('projects.destroy', $project->uuid),
                 // 'importantTasks' => $project->tasks()->importantDraft()->get(),
             ],
+          
         ]);
     
 
@@ -142,13 +148,16 @@ class TaskController extends Controller
         $request->validate([
             'description' => 'required|string',
             'note' => 'nullable|string',
-            'due_date' => 'nullable|',
+            'due_date' => 'nullable',
+            'categories' => 'nullable',
         ]);
 
+        // dd($request->all());
         $model = auth()->user()->tasks()->where('uuid', $id)->firstOrFail();
         $model->description = $request->description;
         $model->note = $request->note;
         $model->due_date = $request->due_date;
+        $model->categories = $request->categories;
         $model->save();
 
         // return redirect()->route('projects.show', $model->project->uuid)->with('success', 'Task created successfully.');

@@ -54,6 +54,7 @@ import {
     CalendarPlus,
     Check,
     ChevronsUpDown,
+    Circle,
     Copy,
     Dot,
     File,
@@ -83,13 +84,14 @@ onMounted(() => {
 });
 
 // Define props with TypeScript type
-const props = defineProps<{ project: any; draftTasks: any; completedTasks: any; listOptions: any }>();
+const props = defineProps<{ project: any; draftTasks: any; completedTasks: any; categoryOptions: any; listOptions: any }>();
 
 const initProject = ref<any>(props.project);
 const activeTask = ref();
 const openTaskSheet = ref(false);
 const sort = ref('description');
 const lists = ref<any>(props.listOptions);
+const categories = ref<any>(props.categoryOptions);
 const selectedList = ref<(typeof props.listOptions)[0] | undefined>();
 const selectedDueDate = ref<DateValue>();
 
@@ -97,7 +99,7 @@ const form = useForm({
     description: '',
     note: '',
     due_date: null as string | null,
-    category: '',
+    categories: '',
     project_uuid: '',
 });
 
@@ -143,7 +145,8 @@ function addTask() {
 
 function editTask(uuid: string) {
     form.due_date = selectedDueDate.value ? dateValueToString(selectedDueDate.value) : null;
-    console.log('DATE', form.due_date);
+    form.categories = JSON.stringify(form.categories);
+    console.log('categories', form.categories);
     form.put(route('tasks.update', uuid), {
         preserveScroll: true,
         preserveState: true,
@@ -224,6 +227,7 @@ function setActiveTask(uuid: string) {
     activeTask.value = task;
     form.description = task.description || '';
     form.note = task.note || '';
+    form.categories = task.categories ? JSON.parse(task.categories).map((cat: any) => cat.value ?? cat) : [];
     if (task.due_date) {
         selectedDueDate.value = stringToDateValue(task.due_date);
     }
@@ -425,13 +429,30 @@ const moveTask = (taskId: string) => {
                                 />
                                 <label class="text-sm leading-4 font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                                     {{ item.description }}
-                                    <div class="flex gap-2 text-xs">
-                                        <span v-if="item.due_date" class="mt-1 flex items-center gap-1 text-gray-400"
-                                            ><CalendarDaysIcon class="h-3.5 w-3.5" /> {{ customFormatDate(item.due_date) }}</span
-                                        >
-                                        <span v-if="item.note" class="mt-1 flex items-center gap-1 text-gray-400"
-                                            ><StickyNote class="h-3.5 w-3.5" /> Note</span
-                                        >
+                                    <div class="mt-1 flex flex-wrap gap-2 text-xs">
+                                        <!-- Due Date -->
+                                        <span v-if="item.due_date" class="flex items-center gap-1 text-gray-400">
+                                            <CalendarDaysIcon class="h-3.5 w-3.5" />
+                                            {{ customFormatDate(item.due_date) }}
+                                        </span>
+
+                                        <!-- Note -->
+                                        <span v-if="item.note" class="flex items-center gap-1 text-gray-400">
+                                            <StickyNote class="h-3.5 w-3.5" />
+                                            Note
+                                        </span>
+
+                                        <!-- Categories - FIXED -->
+                                        <template v-if="item.categories && item.categories.length">
+                                            <span
+                                                v-for="(cat, index) in JSON.parse(item.categories)"
+                                                :key="index"
+                                                :class="`flex items-center gap-1 text-xs text-${cat}-500 capitalize`"
+                                            >
+                                                <Circle class="h-2.5 w-2.5" />
+                                                {{ cat }} category
+                                            </span>
+                                        </template>
                                     </div>
                                 </label>
                             </div>
@@ -472,9 +493,31 @@ const moveTask = (taskId: string) => {
                                         <label class="text-sm leading-4 font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                                             <span class="line-through">{{ item.description }}</span>
 
-                                            <span v-if="item.note" class="mt-1 flex items-center gap-1 text-sm text-gray-400"
-                                                ><StickyNote class="h-4 w-4" /> Note</span
-                                            >
+                                            <div class="mt-1 flex flex-wrap gap-2 text-xs">
+                                                <!-- Due Date -->
+                                                <span v-if="item.due_date" class="flex items-center gap-1 text-gray-400">
+                                                    <CalendarDaysIcon class="h-3.5 w-3.5" />
+                                                    {{ customFormatDate(item.due_date) }}
+                                                </span>
+
+                                                <!-- Note -->
+                                                <span v-if="item.note" class="flex items-center gap-1 text-gray-400">
+                                                    <StickyNote class="h-3.5 w-3.5" />
+                                                    Note
+                                                </span>
+
+                                                <!-- Categories - FIXED -->
+                                                <template v-if="item.categories && item.categories.length">
+                                                    <span
+                                                        v-for="(cat, index) in JSON.parse(item.categories)"
+                                                        :key="index"
+                                                        :class="`flex items-center gap-1 text-xs text-${cat}-500 capitalize`"
+                                                    >
+                                                        <Circle class="h-2.5 w-2.5" />
+                                                        {{ cat }} category
+                                                    </span>
+                                                </template>
+                                            </div>
                                         </label>
                                     </div>
 
@@ -537,7 +580,7 @@ const moveTask = (taskId: string) => {
             </div>
 
             <div class="flex w-full items-center justify-between rounded-sm p-2 shadow dark:bg-zinc-900">
-                <Select :multiple="true" v-model="form.category">
+                <Select :multiple="true" v-model="form.categories" @update:modelValue="editTask(activeTask.uuid)">
                     <SelectTrigger class="w-full border-0">
                         <div class="flex items-center gap-2">
                             <Tag class="me-2 h-4 w-4" />
@@ -547,11 +590,15 @@ const moveTask = (taskId: string) => {
                     <SelectContent class="dark:bg-zinc-900">
                         <SelectGroup>
                             <!-- <SelectLabel>Fruits</SelectLabel> -->
-                            <SelectItem value="blue" class="text-blue-500"> <Dot /> Blue </SelectItem>
+                            <!-- <SelectItem value="blue" class="text-blue-500"> <Dot /> Blue </SelectItem>
                             <SelectItem value="green" class="text-green-500"> <Dot /> Green </SelectItem>
                             <SelectItem value="orange" class="text-orange-500"> <Dot /> Orange </SelectItem>
                             <SelectItem value="red" class="text-red-500"> <Dot /> Red </SelectItem>
-                            <SelectItem value="yellow" class="text-yellow-500"> <Dot /> Yellow </SelectItem>
+                            <SelectItem value="yellow" class="text-yellow-500"> <Dot /> Yellow </SelectItem> -->
+
+                            <SelectItem v-for="option in categories" :key="option.value" :value="option.value" :class="`text-${option.value}-500`">
+                                <Dot /> {{ option.label }}
+                            </SelectItem>
                         </SelectGroup>
                     </SelectContent>
                 </Select>
