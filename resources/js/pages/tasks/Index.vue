@@ -65,6 +65,7 @@ import {
     StickyNote,
     Tag,
     Trash2,
+    X,
 } from 'lucide-vue-next';
 import { ComboboxContent, DateValue } from 'reka-ui';
 import { computed, onMounted, ref, watch } from 'vue';
@@ -101,6 +102,7 @@ const form = useForm({
     due_date: null as string | null,
     categories: '',
     project_uuid: '',
+    attachment: '',
 });
 
 watch(
@@ -152,6 +154,28 @@ function editTask(uuid: string) {
         preserveState: true,
         onSuccess: () => {
             showSheet(uuid);
+        },
+    });
+}
+
+function uploadTaskFile(e: any, uuid: string) {
+    const data = new FormData();
+    // data.append('_method', 'put');
+    data.append('attachment', e.target.files[0]);
+    console.log('UPLOAD', data);
+    router.post(route('tasks.upload-file', uuid), data, {
+        forceFormData: true,
+        onProgress: (progress) => {
+            form.progress = progress ?? null;
+        },
+        preserveScroll: true,
+        preserveState: true,
+        onSuccess: function (result) {
+            console.log('UPLOADED', result);
+            form.progress = null;
+            if (openTaskSheet.value) {
+                setActiveTask(uuid);
+            }
         },
     });
 }
@@ -231,6 +255,7 @@ function setActiveTask(uuid: string) {
     if (task.due_date) {
         selectedDueDate.value = stringToDateValue(task.due_date);
     }
+    // console.log('attachments', task.attachments);
 }
 
 function showSheet(uuid: string) {
@@ -429,7 +454,7 @@ const moveTask = (taskId: string) => {
                                 />
                                 <label class="text-sm leading-4 font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                                     {{ item.description }}
-                                    <div class="mt-1 flex flex-wrap gap-2 text-xs">
+                                    <div class="mt-2 flex flex-wrap gap-2 text-xs">
                                         <!-- Due Date -->
                                         <span v-if="item.due_date" class="flex items-center gap-1 text-gray-400">
                                             <CalendarDaysIcon class="h-3.5 w-3.5" />
@@ -447,7 +472,10 @@ const moveTask = (taskId: string) => {
                                             <span
                                                 v-for="(cat, index) in JSON.parse(item.categories)"
                                                 :key="index"
-                                                :class="`flex items-center gap-1 text-xs text-${cat}-500 capitalize`"
+                                                :class="[
+                                                    'flex items-center gap-1 text-xs capitalize',
+                                                    categories.find((c: any) => c.value === cat)?.class,
+                                                ]"
                                             >
                                                 <Circle class="h-2.5 w-2.5" />
                                                 {{ cat }} category
@@ -511,7 +539,10 @@ const moveTask = (taskId: string) => {
                                                     <span
                                                         v-for="(cat, index) in JSON.parse(item.categories)"
                                                         :key="index"
-                                                        :class="`flex items-center gap-1 text-xs text-${cat}-500 capitalize`"
+                                                        :class="[
+                                                            'flex items-center gap-1 text-xs capitalize',
+                                                            categories.find((c: any) => c.value === cat)?.class,
+                                                        ]"
                                                     >
                                                         <Circle class="h-2.5 w-2.5" />
                                                         {{ cat }} category
@@ -541,7 +572,7 @@ const moveTask = (taskId: string) => {
                 <!-- <SheetDescription> Make changes to your task here. </SheetDescription> -->
             </SheetHeader>
 
-            <ScrollArea class="h-4/5">
+            <ScrollArea class="h-4/5 px-2">
                 <div class="mb-2 flex w-full items-center justify-between rounded-sm p-4 shadow dark:bg-zinc-900">
                     <Checkbox
                         @click.stop
@@ -591,13 +622,8 @@ const moveTask = (taskId: string) => {
                         <SelectContent class="dark:bg-zinc-900">
                             <SelectGroup>
                                 <!-- <SelectLabel>Fruits</SelectLabel> -->
-                                <SelectItem
-                                    v-for="option in categories"
-                                    :key="option.value"
-                                    :value="option.value"
-                                    :class="`text-${option.value}-500`"
-                                >
-                                    <CircleIcon :class="`text-${option.value}-500 h-1 w-1`" /> {{ option.label }}
+                                <SelectItem v-for="option in categories" :key="option.value" :value="option.value" :class="`${option.class}`">
+                                    <CircleIcon :class="`${option.class} h-1 w-1`" /> {{ option.label }}
                                 </SelectItem>
                             </SelectGroup>
                         </SelectContent>
@@ -605,18 +631,46 @@ const moveTask = (taskId: string) => {
                 </div>
 
                 <div class="mb-2 flex w-full items-center justify-between rounded-sm p-2 shadow dark:bg-zinc-900">
-                    <div class="relative w-full max-w-sm items-center">
+                    <div class="relative flex w-full max-w-sm flex-col">
                         <Input
                             type="file"
-                            id="file"
+                            id="attachment"
                             class="w-full resize-none border-0 pl-12"
-                            name="file"
+                            name="attachment"
                             autoComplete="off"
                             placeholder="Add file"
+                            @change="(e: any) => uploadTaskFile(e, activeTask.uuid)"
                         />
-                        <span class="absolute inset-y-0 start-0 flex items-center justify-center px-2">
+
+                        <span class="absolute start-0 mt-2.5 flex items-center justify-center px-2">
                             <File class="ms-2 size-4 text-muted-foreground" />
                         </span>
+
+                        <progress v-if="form.progress" :value="form.progress.percentage" max="100" class="mt-2 w-full rounded-full border">
+                            {{ form.progress.percentage }}%
+                        </progress>
+
+                        <ul v-if="activeTask.attachments" class="ms-2 mt-2 max-w-md divide-y divide-gray-200 dark:divide-gray-700">
+                            <li class="py-2 sm:py-2.5" v-for="file in activeTask.attachments">
+                                <div class="flex items-center space-x-4 rtl:space-x-reverse">
+                                    <div class="shrink-0">
+                                        <div
+                                            class="0 relative inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg"
+                                            :style="{ background: project.color }"
+                                        >
+                                            <span class="text-sm font-medium text-gray-900 uppercase">{{ file.extension }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="min-w-0 flex-1">
+                                        <p class="truncate text-sm font-medium text-gray-900 dark:text-white">{{ file.name }}</p>
+                                        <p class="truncate text-sm text-gray-500 dark:text-gray-400">{{ file.size }}KB</p>
+                                    </div>
+                                    <div class="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
+                                        <Button variant="ghost" class="cursor-pointer" @click="console.log('OK')"><X /></Button>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
                     </div>
                 </div>
 

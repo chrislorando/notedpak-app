@@ -80,4 +80,9 @@ class Task extends Model
     {
         $query->where('is_important', true)->where('is_completed', false);
     }
+
+    public function attachments()
+    {
+        return $this->hasMany(TaskFiles::class);
+    }
 }

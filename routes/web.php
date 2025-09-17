@@ -30,6 +30,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('tasks/copy/{id}', [TaskController::class, 'copyTask'])->name('tasks.copy');
     Route::patch('tasks/move/{id}', [TaskController::class, 'moveTask'])->name('tasks.move');
     Route::delete('tasks/{id}', [TaskController::class, 'destroy'])->name('tasks.destroy');
+    Route::post('tasks/upload-file/{id}', [TaskController::class, 'uploadFile'])->name('tasks.upload-file');
+   
 });
 
 require __DIR__.'/settings.php';

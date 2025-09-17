@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Enums\Category;
 use App\Models\Project;
 use App\Models\Task;
+use App\Models\TaskFiles;
 use Cache;
 use Illuminate\Http\Request;
+use Storage;
 use Inertia\Inertia;
 use Str;
 
@@ -26,29 +28,30 @@ class TaskController extends Controller
         ->get();
 
         Inertia::share([
-            'project' => fn () => [
-                'id' => $project->id,
-                'name' => $project->name,
-                'description' => $project->description,
-                'color' => $project->color,
-                'tasks' => $project->tasks,
-                'user_id' => $project->user_id,
-                'created_at' => $project->created_at,
-                'updated_at' => $project->updated_at,
-                'uuid' => $project->uuid,
-            ],
+            // 'project' => fn () => [
+            //     'id' => $project->id,
+            //     'name' => $project->name,
+            //     'description' => $project->description,
+            //     'color' => $project->color,
+            //     'tasks' => $project->tasks,
+            //     'user_id' => $project->user_id,
+            //     'created_at' => $project->created_at,
+            //     'updated_at' => $project->updated_at,
+            //     'uuid' => $project->uuid,
+            // ],
             'listOptions' => $projects,
             'categoryOptions' => collect(Category::cases())->map(fn($case) => [
                 'label' => ucfirst($case->value),
                 'value' => $case->value,
+                'class' => $case->colorClass(),
             ]),
         ]);
     
 
         return Inertia::render('tasks/Index', [
             'project' => $project,
-            'draftTasks' => $project->tasks()->draft()->orderBy($sortBy, $sortOrder)->get(),
-            'completedTasks' => $project->tasks()->completed()->orderBy($sortBy, $sortOrder)->get(),
+            'draftTasks' => $project->tasks()->draft()->with('attachments')->orderBy($sortBy, $sortOrder)->get(),
+            'completedTasks' => $project->tasks()->completed()->with('attachments')->orderBy($sortBy, $sortOrder)->get(),
            
         ]);
     }
@@ -232,5 +235,19 @@ class TaskController extends Controller
         $copy->save();
 
         $task->delete();
+    }
+
+    public function uploadFile(Request $request, $uuid)
+    {
+        if ($request->hasFile('attachment')) {
+            $path = $request->file('attachment')->storePublicly('attachments');
+
+            $file = new TaskFiles();
+            $file->task_id = Task::where('uuid', $uuid)->firstOrFail()->id;
+            $file->name = $request->file('attachment')->getClientOriginalName();
+            $file->size = $request->file('attachment')->getSize();
+            $file->url = Storage::url($path);
+            $file->save();  
+        }
     }
 }
