@@ -65,6 +65,7 @@ class TaskController extends Controller
         ->with(['project','attachments'])
         ->whereLike('description',  '%'.$request->query('q').'%')
         ->orderBy($sortBy, $sortOrder)
+        ->limit(value: 20)
         ->get();
 
         $projects = auth()->user()->projects()
