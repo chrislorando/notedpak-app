@@ -57,6 +57,7 @@ class HandleInertiaRequests extends Middleware
                     ->orderBy('id', 'desc')
                     ->get()
                 : [],
+            'search' => $request->has('q') ? $request->get('q') : null,
         ];
     }
 }

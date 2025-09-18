@@ -21,6 +21,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('projects/copy/{id}', [ProjectController::class, 'copyList'])->name('projects.copy');
     Route::resource('projects', ProjectController::class);
     // Route::resource('tasks', TaskController::class);
+
+    Route::get('tasks', [TaskController::class, 'search'])->name('tasks.search');
     Route::get('tasks/search-list-options', [TaskController::class, 'searchListOptions'])->name('tasks.search-list-options');
     Route::get('tasks/{uuid}', [TaskController::class, 'index'])->name('tasks.show');
     Route::post('tasks', [TaskController::class, 'store']);

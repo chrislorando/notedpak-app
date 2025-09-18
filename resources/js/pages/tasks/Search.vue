@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import DatePicker from '@/components/DatePicker.vue';
-import ProjectModalForm from '@/components/ProjectModalForm.vue';
 import { AlertDialogAction } from '@/components/ui/alert-dialog';
 import AlertDialog from '@/components/ui/alert-dialog/AlertDialog.vue';
 import AlertDialogCancel from '@/components/ui/alert-dialog/AlertDialogCancel.vue';
@@ -12,7 +11,6 @@ import AlertDialogTitle from '@/components/ui/alert-dialog/AlertDialogTitle.vue'
 import AlertDialogTrigger from '@/components/ui/alert-dialog/AlertDialogTrigger.vue';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
     Combobox,
     ComboboxAnchor,
@@ -25,13 +23,6 @@ import {
     ComboboxTrigger,
 } from '@/components/ui/combobox';
 
-import DropdownMenu from '@/components/ui/dropdown-menu/DropdownMenu.vue';
-import DropdownMenuContent from '@/components/ui/dropdown-menu/DropdownMenuContent.vue';
-import DropdownMenuLabel from '@/components/ui/dropdown-menu/DropdownMenuLabel.vue';
-import DropdownMenuRadioGroup from '@/components/ui/dropdown-menu/DropdownMenuRadioGroup.vue';
-import DropdownMenuRadioItem from '@/components/ui/dropdown-menu/DropdownMenuRadioItem.vue';
-import DropdownMenuSeparator from '@/components/ui/dropdown-menu/DropdownMenuSeparator.vue';
-import DropdownMenuTrigger from '@/components/ui/dropdown-menu/DropdownMenuTrigger.vue';
 import { Input } from '@/components/ui/input';
 import ScrollArea from '@/components/ui/scroll-area/ScrollArea.vue';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -43,15 +34,12 @@ import SheetHeader from '@/components/ui/sheet/SheetHeader.vue';
 import SheetTitle from '@/components/ui/sheet/SheetTitle.vue';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { customFormatDate, dateValueToString, stringToDateValue } from '@/lib/date';
+import { customFormatDate, dateValueToString } from '@/lib/date';
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem } from '@/types';
-import { Head, router, useForm } from '@inertiajs/vue3';
+import { Head, router, useForm, usePage } from '@inertiajs/vue3';
 import {
-    ArrowUpDown,
-    CalendarDays,
     CalendarDaysIcon,
-    CalendarPlus,
     Check,
     ChevronsUpDown,
     Circle,
@@ -60,6 +48,7 @@ import {
     File,
     List,
     ListEndIcon,
+    ListIcon,
     PanelRightClose,
     Star,
     StickyNote,
@@ -85,9 +74,10 @@ onMounted(() => {
 });
 
 // Define props with TypeScript type
-const props = defineProps<{ project: any; draftTasks: any; completedTasks: any; categoryOptions: any; listOptions: any }>();
+const props = defineProps<{ tasks: any; categoryOptions: any; listOptions: any }>();
+const page = usePage();
 
-const initProject = ref<any>(props.project);
+const search = ref<string>(String(page.props.search ?? ''));
 const activeTask = ref();
 const openTaskSheet = ref(false);
 const sort = ref('description');
@@ -106,22 +96,22 @@ const form = useForm({
 });
 
 watch(
-    () => props.project,
-    (project: any) => {
-        if (project) {
+    () => page.props.search,
+    (search: any) => {
+        if (search) {
             breadcrumbs.value = [
                 {
-                    title: project.name,
-                    href: `/projects/${project.uuid}`,
-                    color: project.color,
+                    title: `Searching for "${search}"`,
+                    href: `#`,
+                    color: '#ffffff',
                 },
             ];
 
-            initProject.value = project;
-            form.project_uuid = initProject.value?.uuid;
-            form.reset('description');
+            // initProject.value = project;
+            // form.project_uuid = initProject.value?.uuid;
+            // form.reset('description');
 
-            console.log(project);
+            // console.log(project);
         }
     },
     { immediate: true },
@@ -259,15 +249,14 @@ function deleteList(uuid: string) {
 }
 
 function setActiveTask(uuid: string) {
-    const task = [...props.draftTasks, ...props.completedTasks].find((t) => t.uuid === uuid);
-    activeTask.value = task;
-    form.description = task.description || '';
-    form.note = task.note || '';
-    form.categories = task.categories ? JSON.parse(task.categories).map((cat: any) => cat.value ?? cat) : [];
-    if (task.due_date) {
-        selectedDueDate.value = stringToDateValue(task.due_date);
-    }
-    // console.log('attachments', task.attachments);
+    // const task = [...props.draftTasks, ...props.completedTasks].find((t) => t.uuid === uuid);
+    // activeTask.value = task;
+    // form.description = task.description || '';
+    // form.note = task.note || '';
+    // form.categories = task.categories ? JSON.parse(task.categories).map((cat: any) => cat.value ?? cat) : [];
+    // if (task.due_date) {
+    //     selectedDueDate.value = stringToDateValue(task.due_date);
+    // }
 }
 
 function showSheet(uuid: string) {
@@ -282,16 +271,16 @@ function hideSheet(uuid: string) {
 
 function submitSort() {
     console.log('SORT', sort.value);
-    router.get(
-        route('tasks.show', initProject.value?.uuid),
-        {
-            sort: sort.value,
-        },
-        {
-            preserveScroll: true,
-            preserveState: true,
-        },
-    );
+    // router.get(
+    //     route('tasks.show', initProject.value?.uuid),
+    //     {
+    //         sort: sort.value,
+    //     },
+    //     {
+    //         preserveScroll: true,
+    //         preserveState: true,
+    //     },
+    // );
 }
 
 const searchLists = async (q: string) => {
@@ -309,24 +298,24 @@ const searchLists = async (q: string) => {
 };
 
 const copyList = () => {
-    console.log('COPY', props.project);
-    router.patch(
-        route('projects.copy', props.project.uuid),
-        {},
-        {
-            preserveScroll: true,
-            preserveState: true,
-            onSuccess: function (result) {
-                selectedList.value = '';
-                lists.value = props.listOptions;
-                toast.success('List has been copied', {
-                    description: Date().toString(),
-                    icon: Check,
-                    duration: 5000,
-                });
-            },
-        },
-    );
+    // console.log('COPY', props.project);
+    // router.patch(
+    //     route('projects.copy', props.project.uuid),
+    //     {},
+    //     {
+    //         preserveScroll: true,
+    //         preserveState: true,
+    //         onSuccess: function (result) {
+    //             selectedList.value = '';
+    //             lists.value = props.listOptions;
+    //             toast.success('List has been copied', {
+    //                 description: Date().toString(),
+    //                 icon: Check,
+    //                 duration: 5000,
+    //             });
+    //         },
+    //     },
+    // );
 };
 
 const copyTask = (taskId: string) => {
@@ -377,84 +366,16 @@ const moveTask = (taskId: string) => {
 </script>
 
 <template>
-    <Head :title="initProject.name" />
+    <Head :title="`Searching for ${search}`" />
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full w-full flex-1 flex-col gap-1 rounded-xl p-5" style="width: 100%">
-            <div class="flex w-full items-start justify-end">
-                <ProjectModalForm :is-new-record="false" :data="initProject" />
-                <Button variant="ghost" @click="copyList" class="cursor-pointer">
-                    <Copy /> <span class="hidden md:inline-block">Duplicate</span>
-                </Button>
-                <div class="space-y-3">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger
-                            class="inline-flex h-9 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-md px-4 py-2 text-base font-medium whitespace-nowrap transition-all outline-none hover:bg-accent hover:text-accent-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 has-[>svg]:px-3 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:hover:bg-accent/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
-                        >
-                            <ArrowUpDown />
-                            <span class="hidden md:inline-block">Sort</span>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                            <DropdownMenuLabel>Sort by</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuRadioGroup v-model="sort" @update:modelValue="submitSort">
-                                <DropdownMenuRadioItem value="is_important"><Star /> Importance</DropdownMenuRadioItem>
-                                <DropdownMenuRadioItem value="due_date"><CalendarDays /> Due date</DropdownMenuRadioItem>
-                                <DropdownMenuRadioItem value="description"><ArrowUpDown /> Alphabetically</DropdownMenuRadioItem>
-                                <DropdownMenuRadioItem value="created_at"><CalendarPlus /> Creation date</DropdownMenuRadioItem>
-                            </DropdownMenuRadioGroup>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-
-                    <AlertDialog>
-                        <AlertDialogTrigger as-child>
-                            <Button variant="ghost" class="cursor-pointer text-[var(--destructive)]">
-                                <Trash2 /> <span class="hidden md:inline-block">Remove list</span>
-                            </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>"{{ initProject.name }}" will be permanently deleted.</AlertDialogTitle>
-                                <AlertDialogDescription> This won't be able to undo this action. </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction @click.stop="deleteList(initProject.uuid)" class="bg-[var(--destructive)] text-white"
-                                    >Continue</AlertDialogAction
-                                >
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
-                </div>
-            </div>
-
-            <div class="relative">
-                <div
-                    class="absolute top-0 right-0 left-0 flex flex-col items-center rounded-sm border px-3 py-3 text-sm font-semibold shadow backdrop-blur-sm dark:bg-zinc-900"
-                >
-                    <form @submit.prevent="addTask" class="flex w-full items-center space-x-2 rounded-md">
-                        <Input
-                            type="text"
-                            id="description"
-                            name="description"
-                            placeholder="Add a task"
-                            class="light:text-zinc-100 flex-1 border-none px-4 py-5"
-                            v-model="form.description"
-                            autocomplete="off"
-                        />
-                        <Button type="submit" class="bg-primary py-5" :style="{ background: project.color }" variant="default" :disabled="isDisabled">
-                            Add
-                        </Button>
-                    </form>
-                </div>
-            </div>
-
-            <ScrollArea class="mt-20 h-[calc(100vh-200px)] w-[calc(100%+20px)] rounded-md border-0 pb-10">
+            <ScrollArea class="h-[calc(100vh-65px)] w-[calc(100%+20px)] rounded-md border-0 pb-10">
                 <div class="flex w-[calc(100%-20px)] flex-col gap-2">
                     <ul>
                         <li
                             @click.stop="showSheet(item.uuid)"
                             v-bind:key="item.id"
-                            v-for="item in draftTasks"
+                            v-for="item in tasks"
                             class="mb-1 flex items-center justify-between rounded-sm border p-5 shadow dark:bg-zinc-900"
                         >
                             <div class="flex items-start space-x-3">
@@ -462,11 +383,17 @@ const moveTask = (taskId: string) => {
                                     @click.stop
                                     @update:model-value="completeTask(item.uuid)"
                                     class="rounded-2xl border-foreground"
-                                    :style="{ borderColor: project.color }"
+                                    :style="{ borderColor: item.project.color }"
                                 />
                                 <label class="text-sm leading-4 font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                                    {{ item.description }}
+                                    <span :class="`${item.is_completed ? 'line-through' : ''}`">{{ item.description }}</span>
                                     <div class="mt-2 flex flex-wrap gap-2 text-xs">
+                                        <!-- Project -->
+                                        <span v-if="item.project.name" class="flex items-center gap-1 text-gray-400">
+                                            <ListIcon class="h-3.5 w-3.5" />
+                                            {{ item.project.name }}
+                                        </span>
+
                                         <!-- Due Date -->
                                         <span v-if="item.due_date" class="flex items-center gap-1 text-gray-400">
                                             <CalendarDaysIcon class="h-3.5 w-3.5" />
@@ -498,79 +425,10 @@ const moveTask = (taskId: string) => {
                             </div>
 
                             <button type="button" class="text-gray-400 hover:text-yellow-500" @click.stop="bookmarkTask(item.uuid)">
-                                <Star :size="18" :fill="item.is_important ? project.color : ''" />
+                                <Star :size="18" :fill="item.is_important ? item.project.color : ''" />
                             </button>
                         </li>
                     </ul>
-
-                    <Collapsible :default-open="completedTasks.length > 0" :hidden="completedTasks.length === 0" class="mt-1 w-full space-y-3">
-                        <div class="flex w-35 items-center space-x-0">
-                            <CollapsibleTrigger asChild>
-                                <Button variant="default" size="sm" :style="{ background: project.color }">
-                                    <h4 class="text-sm font-semibold">Completed {{ completedTasks.length }}</h4>
-                                    <ChevronsUpDown class="h-4 w-4" />
-                                    <span class="sr-only">Toggle</span>
-                                </Button>
-                            </CollapsibleTrigger>
-                        </div>
-                        <CollapsibleContent class="space-y-2">
-                            <ul>
-                                <li
-                                    @click.stop="showSheet(item.uuid)"
-                                    v-bind:key="item.id"
-                                    v-for="item in completedTasks"
-                                    class="mb-1 flex items-center justify-between rounded-sm border p-5 shadow dark:bg-zinc-900"
-                                >
-                                    <div class="flex items-start space-x-3">
-                                        <Checkbox
-                                            @click.stop
-                                            @update:model-value="completeTask(item.uuid)"
-                                            class="rounded-2xl"
-                                            :id="`task-${item.id}`"
-                                            :default-value="true"
-                                            :style="{ borderColor: project.color, background: project.color }"
-                                        />
-                                        <label class="text-sm leading-4 font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                                            <span class="line-through">{{ item.description }}</span>
-
-                                            <div class="mt-1 flex flex-wrap gap-2 text-xs">
-                                                <!-- Due Date -->
-                                                <span v-if="item.due_date" class="flex items-center gap-1 text-gray-400">
-                                                    <CalendarDaysIcon class="h-3.5 w-3.5" />
-                                                    {{ customFormatDate(item.due_date) }}
-                                                </span>
-
-                                                <!-- Note -->
-                                                <span v-if="item.note" class="flex items-center gap-1 text-gray-400">
-                                                    <StickyNote class="h-3.5 w-3.5" />
-                                                    Note
-                                                </span>
-
-                                                <!-- Categories - FIXED -->
-                                                <template v-if="item.categories && item.categories.length">
-                                                    <span
-                                                        v-for="(cat, index) in JSON.parse(item.categories)"
-                                                        :key="index"
-                                                        :class="[
-                                                            'flex items-center gap-1 text-xs capitalize',
-                                                            categories.find((c: any) => c.value === cat)?.class,
-                                                        ]"
-                                                    >
-                                                        <Circle class="h-2.5 w-2.5" />
-                                                        {{ cat }} category
-                                                    </span>
-                                                </template>
-                                            </div>
-                                        </label>
-                                    </div>
-
-                                    <button type="button" class="text-gray-400 hover:text-yellow-500" @click.stop="bookmarkTask(item.uuid)">
-                                        <Star :size="18" :fill="item.is_important ? project.color : ''" />
-                                    </button>
-                                </li>
-                            </ul>
-                        </CollapsibleContent>
-                    </Collapsible>
                 </div>
             </ScrollArea>
         </div>
@@ -591,7 +449,6 @@ const moveTask = (taskId: string) => {
                         @update:model-value="completeTask(activeTask.uuid)"
                         class="me-4 items-center rounded-2xl border-foreground"
                         :default-value="activeTask.is_completed ? true : false"
-                        :style="{ borderColor: project.color, background: activeTask.is_completed ? project.color : '' }"
                     />
 
                     <div class="flex-1">
@@ -608,7 +465,7 @@ const moveTask = (taskId: string) => {
                     </div>
 
                     <button type="button" class="ms-4 text-gray-400 hover:text-yellow-500" @click.stop="bookmarkTask(activeTask.uuid)">
-                        <Star :size="18" :fill="activeTask.is_important ? project.color : ''" />
+                        <Star :size="18" />
                     </button>
                 </div>
 
@@ -666,10 +523,7 @@ const moveTask = (taskId: string) => {
                             <li class="py-2 sm:py-2.5" v-for="file in activeTask.attachments">
                                 <div class="flex items-center space-x-4 rtl:space-x-reverse">
                                     <div class="shrink-0">
-                                        <div
-                                            class="0 relative inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg"
-                                            :style="{ background: project.color }"
-                                        >
+                                        <div class="0 relative inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg">
                                             <span class="text-sm font-medium text-gray-900 uppercase">{{ file.extension }}</span>
                                         </div>
                                     </div>

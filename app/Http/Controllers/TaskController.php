@@ -56,6 +56,36 @@ class TaskController extends Controller
         ]);
     }
 
+    public function search(Request $request)
+    {
+        $sortBy = 'description';
+        $sortOrder = 'asc';
+  
+        $tasks = auth()->user()->tasks()
+        ->with(['project','attachments'])
+        ->whereLike('description',  '%'.$request->query('q').'%')
+        ->orderBy($sortBy, $sortOrder)
+        ->get();
+
+        $projects = auth()->user()->projects()
+        ->limit(value: 10)
+        ->get();
+
+        Inertia::share([
+            'listOptions' => $projects,
+            'categoryOptions' => collect(Category::cases())->map(fn($case) => [
+                'label' => ucfirst($case->value),
+                'value' => $case->value,
+                'class' => $case->colorClass(),
+            ]),
+        ]);
+    
+
+        return Inertia::render('tasks/Search', [
+            'tasks' => $tasks,
+        ]);
+    }
+
     /**
      * Show the form for creating a new resource.
      */
