@@ -180,6 +180,18 @@ function uploadTaskFile(e: any, uuid: string) {
     });
 }
 
+function deleteFile(uuid: string, id: string) {
+    router.delete(route('tasks.delete-file', id), {
+        preserveScroll: true,
+        preserveState: true,
+        onSuccess: function (result) {
+            if (openTaskSheet.value) {
+                setActiveTask(uuid);
+            }
+        },
+    });
+}
+
 // const debouncedEdit = useDebounceFn((uuid: string) => {
 //     editTask(uuid);
 // }, 500);
@@ -666,7 +678,7 @@ const moveTask = (taskId: string) => {
                                         <p class="truncate text-sm text-gray-500 dark:text-gray-400">{{ file.size }}KB</p>
                                     </div>
                                     <div class="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                                        <Button variant="ghost" class="cursor-pointer" @click="console.log('OK')"><X /></Button>
+                                        <Button variant="ghost" class="cursor-pointer" @click="deleteFile(activeTask.uuid, file.id)"><X /></Button>
                                     </div>
                                 </div>
                             </li>
@@ -766,9 +778,9 @@ const moveTask = (taskId: string) => {
                 </div>
             </ScrollArea>
 
-            <SheetFooter class="!flex !flex-row !items-center !justify-between !space-y-0">
+            <SheetFooter class="!flex !flex-row !items-start !justify-between !space-y-0">
                 <SheetClose as-child>
-                    <Button type="button" variant="ghost"> <PanelRightClose /> </Button>
+                    <Button type="button" variant="ghost" class="items-start"> <PanelRightClose /> </Button>
                 </SheetClose>
 
                 <div class="flex-1 text-center">
@@ -778,7 +790,7 @@ const moveTask = (taskId: string) => {
 
                 <AlertDialog>
                     <AlertDialogTrigger as-child>
-                        <Button variant="ghost" class="cursor-pointer text-[var(--destructive)]"> <Trash2 /> </Button>
+                        <Button variant="ghost" class="cursor-pointer items-start text-[var(--destructive)]"> <Trash2 /> </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                         <AlertDialogHeader>

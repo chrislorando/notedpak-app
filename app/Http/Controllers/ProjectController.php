@@ -184,26 +184,42 @@ class ProjectController extends Controller
 
     public function copyList($id)
     {
-        $project = Project::with(['tasks'])->where('uuid', $id)->firstOrFail();
-        $baseName = $project->name;
-        $count = Project::where('name', 'LIKE', $baseName . '%')->count();
+        try {
+            \DB::beginTransaction();
 
-        $copy = $project->replicate();
+            $project = Project::with(['tasks.attachments'])->where('uuid', $id)->firstOrFail();
+            $baseName = $project->name;
+            $count = Project::where('name', 'LIKE', $baseName . '%')->count();
 
-        $copy->uuid = Str::uuid();
-        $copy->name = $baseName . ' (' . $count . ')';
-        $copy->created_at = now();
-        $copy->updated_at = now();
-        $copy->save();
+            $copy = $project->replicate();
 
-        foreach ($project->tasks as $task) {
-            $taskCopy = $task->replicate();
-            $taskCopy->project_id = $copy->id;
-            $taskCopy->uuid = Str::uuid();
-            $taskCopy->created_at = now();
-            $taskCopy->updated_at = now();
-            $taskCopy->save();
+            $copy->uuid = Str::uuid();
+            $copy->name = $baseName . ' (' . $count . ')';
+            $copy->created_at = now();
+            $copy->updated_at = now();
+            $copy->save();
 
+            foreach ($project->tasks as $task) {
+                $taskCopy = $task->replicate();
+                $taskCopy->project_id = $copy->id;
+                $taskCopy->uuid = Str::uuid();
+                $taskCopy->created_at = now();
+                $taskCopy->updated_at = now();
+                $taskCopy->save();
+
+                foreach ($task->attachments as $attachment) {
+                    $attachmentCopy = $attachment->replicate();
+                    $attachmentCopy->task_id = $taskCopy->id;
+                    $attachmentCopy->created_at = now();
+                    $attachmentCopy->updated_at = now();
+                    $attachmentCopy->save();
+                }
+            }
+
+            \DB::commit();
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            return response()->json(['error' => 'Failed to copy project: ' . $e->getMessage()], 500);
         }
     }
 }

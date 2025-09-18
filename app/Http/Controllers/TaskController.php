@@ -173,9 +173,27 @@ class TaskController extends Controller
     public function destroy(string $id)
     {
         $model = auth()->user()->tasks()->where('uuid', $id)->first();
-        $model->delete();
-     
-       
+        if ($model) {
+        
+            foreach ($model->attachments as $file) {
+            
+                if ($file->url) {
+                    // Storage::delete(str_replace('/storage/', '', $file->url));
+                    $parsedUrl = parse_url($file->url, PHP_URL_PATH);
+    
+                    $path = ltrim($parsedUrl, '/');
+                    $bucket = config('filesystems.disks.minio.bucket');
+                    if (str_starts_with($path, $bucket . '/')) {
+                        $path = substr($path, strlen($bucket) + 1);
+                    }
+
+                    $disk = config('filesystems.default', 's3');
+                    Storage::disk($disk)->delete($path);
+                }
+                $file->delete();
+            }
+            $model->delete();
+        }  
     }
 
     
@@ -211,30 +229,64 @@ class TaskController extends Controller
 
     public function copyTask(Request $request, $id)
     {
-        $task = Task::where('uuid', $id)->firstOrFail();
+        try {
+            \DB::beginTransaction();
 
-        $copy = $task->replicate();
+            $task = Task::with(['attachments'])->where('uuid', $id)->firstOrFail();
 
-        $copy->project_id = $request->project_id;
-        $copy->uuid = Str::uuid();
-        $copy->created_at = now();
-        $copy->updated_at = now();
-        $copy->save();
+            $copy = $task->replicate();
+
+            $copy->project_id = $request->project_id;
+            $copy->uuid = Str::uuid();
+            $copy->created_at = now();
+            $copy->updated_at = now();
+            $copy->save();
+
+            foreach ($task->attachments as $f) {
+                $attachment = $f->replicate();
+                $attachment->task_id = $copy->id;
+                $attachment->created_at = now();
+                $attachment->updated_at = now();
+                $attachment->save();
+            }
+
+            \DB::commit();
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            return response()->json(['error' => 'Failed to copy project: ' . $e->getMessage()], 500);
+            // throw $e;
+        }
     }
 
     public function moveTask(Request $request, $id)
     {
-        $task = Task::where('uuid', $id)->firstOrFail();
+        try {
+            \DB::beginTransaction();
+            $task = Task::with(['attachments'])->where('uuid', $id)->firstOrFail();
 
-        $copy = $task->replicate();
+            $copy = $task->replicate();
 
-        $copy->project_id = $request->project_id;
-        $copy->uuid = Str::uuid();
-        $copy->created_at = now();
-        $copy->updated_at = now();
-        $copy->save();
+            $copy->project_id = $request->project_id;
+            $copy->uuid = Str::uuid();
+            $copy->created_at = now();
+            $copy->updated_at = now();
+            $copy->save();
 
-        $task->delete();
+            foreach ($task->attachments as $f) {
+                $attachment = $f->replicate();
+                $attachment->task_id = $copy->id;
+                $attachment->created_at = now();
+                $attachment->updated_at = now();
+                $attachment->save();
+            }
+
+            $task->delete();
+
+            \DB::commit();
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            return response()->json(['error' => 'Failed to copy project: ' . $e->getMessage()], 500);
+        }
     }
 
     public function uploadFile(Request $request, $uuid)
@@ -249,5 +301,23 @@ class TaskController extends Controller
             $file->url = Storage::url($path);
             $file->save();  
         }
+    }
+
+    public function deleteFile(Request $request, $id)
+    {
+        $model = TaskFiles::where('id', $id)->firstOrFail();
+        if ($model->url) {
+            $parsedUrl = parse_url($model->url, PHP_URL_PATH);
+
+            $path = ltrim($parsedUrl, '/');
+            $bucket = config('filesystems.disks.minio.bucket');
+            if (str_starts_with($path, $bucket . '/')) {
+                $path = substr($path, strlen($bucket) + 1);
+            }
+
+            $disk = config('filesystems.default', 's3');
+            Storage::disk($disk)->delete($path);
+        }
+        $model->delete();
     }
 }

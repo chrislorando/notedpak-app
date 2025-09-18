@@ -31,6 +31,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('tasks/move/{id}', [TaskController::class, 'moveTask'])->name('tasks.move');
     Route::delete('tasks/{id}', [TaskController::class, 'destroy'])->name('tasks.destroy');
     Route::post('tasks/upload-file/{id}', [TaskController::class, 'uploadFile'])->name('tasks.upload-file');
+    Route::delete('tasks/delete-file/{id}', [TaskController::class, 'deleteFile'])->name('tasks.delete-file');
    
 });
 
