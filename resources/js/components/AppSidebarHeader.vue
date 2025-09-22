@@ -40,6 +40,7 @@ onBeforeUnmount(() => {
 });
 
 watch(search, (val) => {
+    console.log('SEARCH', val);
     router.get(
         route('tasks.search'),
         {

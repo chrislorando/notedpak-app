@@ -34,7 +34,7 @@ import SheetHeader from '@/components/ui/sheet/SheetHeader.vue';
 import SheetTitle from '@/components/ui/sheet/SheetTitle.vue';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { customFormatDate, dateValueToString } from '@/lib/date';
+import { customFormatDate, dateValueToString, stringToDateValue } from '@/lib/date';
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm, usePage } from '@inertiajs/vue3';
@@ -50,6 +50,7 @@ import {
     ListEndIcon,
     ListIcon,
     PanelRightClose,
+    SearchX,
     Star,
     StickyNote,
     Tag,
@@ -57,21 +58,8 @@ import {
     X,
 } from 'lucide-vue-next';
 import { ComboboxContent, DateValue } from 'reka-ui';
-import { computed, onMounted, ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
-
-const breadcrumbs = ref<BreadcrumbItem[]>([
-    {
-        title: 'Tasks',
-        href: 'tasks',
-    },
-]);
-
-onMounted(() => {
-    console.log('ADD OVERFLOW 1');
-    window.scrollTo(0, 0);
-    document.body.classList.add('overflow-hidden');
-});
 
 // Define props with TypeScript type
 const props = defineProps<{ tasks: any; categoryOptions: any; listOptions: any }>();
@@ -80,11 +68,18 @@ const page = usePage();
 const search = ref<string>(String(page.props.search ?? ''));
 const activeTask = ref();
 const openTaskSheet = ref(false);
-const sort = ref('description');
 const lists = ref<any>(props.listOptions);
 const categories = ref<any>(props.categoryOptions);
 const selectedList = ref<(typeof props.listOptions)[0] | undefined>();
 const selectedDueDate = ref<DateValue>();
+
+const breadcrumbs = ref<BreadcrumbItem[]>([
+    {
+        title: 'Tasks',
+        href: 'tasks',
+        color: '#ffffff',
+    },
+]);
 
 const form = useForm({
     description: '',
@@ -95,24 +90,24 @@ const form = useForm({
     attachment: '',
 });
 
+onMounted(() => {
+    console.log('ADD OVERFLOW 1');
+    window.scrollTo(0, 0);
+    document.body.classList.add('overflow-hidden');
+});
+
 watch(
     () => page.props.search,
     (search: any) => {
         if (search) {
-            breadcrumbs.value = [
-                {
-                    title: `Searching for "${search}"`,
-                    href: `#`,
-                    color: '#ffffff',
-                },
-            ];
-
-            // initProject.value = project;
-            // form.project_uuid = initProject.value?.uuid;
-            // form.reset('description');
-
-            // console.log(project);
+            breadcrumbs.value[0].title = `Searching for "${search}"`;
+            props.tasks.value = props.tasks.value;
+        } else {
+            breadcrumbs.value[0].title = `Searching for ""`;
+            props.tasks.value = null;
         }
+
+        console.log('SEARCH PROP', props.tasks);
     },
     { immediate: true },
 );
@@ -123,17 +118,6 @@ watch(openTaskSheet, (val) => {
         form.description = '';
     }
 });
-
-const isDisabled = computed(() => form.description.trim() === '' || form.processing);
-
-function addTask() {
-    form.post('/tasks', {
-        preserveScroll: true,
-        onSuccess: function () {
-            form.reset('description');
-        },
-    });
-}
 
 function editTask(uuid: string) {
     form.due_date = selectedDueDate.value ? dateValueToString(selectedDueDate.value) : null;
@@ -150,7 +134,6 @@ function editTask(uuid: string) {
 
 function uploadTaskFile(e: any, uuid: string) {
     const data = new FormData();
-    // data.append('_method', 'put');
     data.append('attachment', e.target.files[0]);
     console.log('UPLOAD', data);
     router.post(route('tasks.upload-file', uuid), data, {
@@ -181,10 +164,6 @@ function deleteFile(uuid: string, id: string) {
         },
     });
 }
-
-// const debouncedEdit = useDebounceFn((uuid: string) => {
-//     editTask(uuid);
-// }, 500);
 
 function completeTask(uuid: string) {
     router.patch(
@@ -226,61 +205,26 @@ function deleteTask(uuid: string) {
         preserveState: true,
         onSuccess: function (result) {
             console.log('DESTROYED', result);
-            if (openTaskSheet) {
-                activeTask.value = [];
-                openTaskSheet.value = false;
-            }
-        },
-    });
-}
-
-function deleteList(uuid: string) {
-    router.delete(route('projects.destroy', uuid), {
-        preserveScroll: true,
-        preserveState: true,
-        onSuccess: function (result) {
-            console.log('DESTROYED', result);
-            // if (openTaskSheet) {
-            //     activeTask.value = [];
-            //     openTaskSheet.value = false;
-            // }
+            openTaskSheet.value = false;
+            // activeTask.value = [];
         },
     });
 }
 
 function setActiveTask(uuid: string) {
-    // const task = [...props.draftTasks, ...props.completedTasks].find((t) => t.uuid === uuid);
-    // activeTask.value = task;
-    // form.description = task.description || '';
-    // form.note = task.note || '';
-    // form.categories = task.categories ? JSON.parse(task.categories).map((cat: any) => cat.value ?? cat) : [];
-    // if (task.due_date) {
-    //     selectedDueDate.value = stringToDateValue(task.due_date);
-    // }
+    const task = [...props.tasks].find((t) => t.uuid === uuid);
+    activeTask.value = task;
+    form.description = task.description || '';
+    form.note = task.note || '';
+    form.categories = task.categories ? JSON.parse(task.categories).map((cat: any) => cat.value ?? cat) : [];
+    if (task.due_date) {
+        selectedDueDate.value = stringToDateValue(task.due_date);
+    }
 }
 
 function showSheet(uuid: string) {
     openTaskSheet.value = true;
     setActiveTask(uuid);
-}
-
-function hideSheet(uuid: string) {
-    editTask(uuid);
-    openTaskSheet.value = true;
-}
-
-function submitSort() {
-    console.log('SORT', sort.value);
-    // router.get(
-    //     route('tasks.show', initProject.value?.uuid),
-    //     {
-    //         sort: sort.value,
-    //     },
-    //     {
-    //         preserveScroll: true,
-    //         preserveState: true,
-    //     },
-    // );
 }
 
 const searchLists = async (q: string) => {
@@ -295,27 +239,6 @@ const searchLists = async (q: string) => {
     } catch (e) {
         console.error('Search error:', e);
     }
-};
-
-const copyList = () => {
-    // console.log('COPY', props.project);
-    // router.patch(
-    //     route('projects.copy', props.project.uuid),
-    //     {},
-    //     {
-    //         preserveScroll: true,
-    //         preserveState: true,
-    //         onSuccess: function (result) {
-    //             selectedList.value = '';
-    //             lists.value = props.listOptions;
-    //             toast.success('List has been copied', {
-    //                 description: Date().toString(),
-    //                 icon: Check,
-    //                 duration: 5000,
-    //             });
-    //         },
-    //     },
-    // );
 };
 
 const copyTask = (taskId: string) => {
@@ -370,20 +293,24 @@ const moveTask = (taskId: string) => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full w-full flex-1 flex-col gap-1 rounded-xl p-5" style="width: 100%">
             <ScrollArea class="h-[calc(100vh-65px)] w-[calc(100%+20px)] rounded-md border-0 pb-10">
+                <div v-if="tasks.length == 0" class="ms-auto flex flex-col items-center">
+                    <SearchX class="mx-auto mt-20 mb-4 h-16 w-16 text-gray-400" />
+                    <p>We searched high and low but couldn't find what you're looking for.</p>
+                </div>
                 <div class="flex w-[calc(100%-20px)] flex-col gap-2">
                     <ul>
                         <li
                             @click.stop="showSheet(item.uuid)"
                             v-bind:key="item.id"
                             v-for="item in tasks"
-                            class="mb-1 flex items-center justify-between rounded-sm border p-5 shadow dark:bg-zinc-900"
+                            class="mb-2 flex items-center justify-between rounded-sm border p-4 shadow dark:bg-zinc-900"
                         >
                             <div class="flex items-start space-x-3">
                                 <Checkbox
                                     @click.stop
                                     @update:model-value="completeTask(item.uuid)"
                                     class="rounded-2xl border-foreground"
-                                    :style="{ borderColor: item.project.color }"
+                                    :style="{ borderColor: item.project?.color ?? '' }"
                                 />
                                 <label class="text-sm leading-4 font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                                     <span :class="`${item.is_completed ? 'line-through' : ''}`">{{ item.description }}</span>
@@ -391,13 +318,13 @@ const moveTask = (taskId: string) => {
                                         <!-- Project -->
                                         <span v-if="item.project.name" class="flex items-center gap-1 text-gray-400">
                                             <ListIcon class="h-3.5 w-3.5" />
-                                            {{ item.project.name }}
+                                            {{ item.project?.name ?? '' }}
                                         </span>
 
                                         <!-- Due Date -->
                                         <span v-if="item.due_date" class="flex items-center gap-1 text-gray-400">
                                             <CalendarDaysIcon class="h-3.5 w-3.5" />
-                                            {{ customFormatDate(item.due_date) }}
+                                            Due {{ customFormatDate(item.due_date) }}
                                         </span>
 
                                         <!-- Note -->
@@ -449,6 +376,7 @@ const moveTask = (taskId: string) => {
                         @update:model-value="completeTask(activeTask.uuid)"
                         class="me-4 items-center rounded-2xl border-foreground"
                         :default-value="activeTask.is_completed ? true : false"
+                        :style="{ borderColor: activeTask.project.color ?? '' }"
                     />
 
                     <div class="flex-1">
@@ -465,7 +393,7 @@ const moveTask = (taskId: string) => {
                     </div>
 
                     <button type="button" class="ms-4 text-gray-400 hover:text-yellow-500" @click.stop="bookmarkTask(activeTask.uuid)">
-                        <Star :size="18" />
+                        <Star :fill="activeTask.is_important ? activeTask.project.color : ''" :size="18" />
                     </button>
                 </div>
 
@@ -523,7 +451,10 @@ const moveTask = (taskId: string) => {
                             <li class="py-2 sm:py-2.5" v-for="file in activeTask.attachments">
                                 <div class="flex items-center space-x-4 rtl:space-x-reverse">
                                     <div class="shrink-0">
-                                        <div class="0 relative inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg">
+                                        <div
+                                            class="relative inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg"
+                                            :style="{ background: activeTask.project.color }"
+                                        >
                                             <span class="text-sm font-medium text-gray-900 uppercase">{{ file.extension }}</span>
                                         </div>
                                     </div>

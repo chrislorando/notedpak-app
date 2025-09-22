@@ -455,7 +455,7 @@ const moveTask = (taskId: string) => {
                             @click.stop="showSheet(item.uuid)"
                             v-bind:key="item.id"
                             v-for="item in draftTasks"
-                            class="mb-1 flex items-center justify-between rounded-sm border p-5 shadow dark:bg-zinc-900"
+                            class="mb-2 flex items-center justify-between rounded-sm border p-4 shadow dark:bg-zinc-900"
                         >
                             <div class="flex items-start space-x-3">
                                 <Checkbox
@@ -519,7 +519,7 @@ const moveTask = (taskId: string) => {
                                     @click.stop="showSheet(item.uuid)"
                                     v-bind:key="item.id"
                                     v-for="item in completedTasks"
-                                    class="mb-1 flex items-center justify-between rounded-sm border p-5 shadow dark:bg-zinc-900"
+                                    class="mb-2 flex items-center justify-between rounded-sm border p-4 shadow dark:bg-zinc-900"
                                 >
                                     <div class="flex items-start space-x-3">
                                         <Checkbox
@@ -537,7 +537,7 @@ const moveTask = (taskId: string) => {
                                                 <!-- Due Date -->
                                                 <span v-if="item.due_date" class="flex items-center gap-1 text-gray-400">
                                                     <CalendarDaysIcon class="h-3.5 w-3.5" />
-                                                    {{ customFormatDate(item.due_date) }}
+                                                    Due {{ customFormatDate(item.due_date) }}
                                                 </span>
 
                                                 <!-- Note -->
@@ -667,7 +667,7 @@ const moveTask = (taskId: string) => {
                                 <div class="flex items-center space-x-4 rtl:space-x-reverse">
                                     <div class="shrink-0">
                                         <div
-                                            class="0 relative inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg"
+                                            class="relative inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg"
                                             :style="{ background: project.color }"
                                         >
                                             <span class="text-sm font-medium text-gray-900 uppercase">{{ file.extension }}</span>

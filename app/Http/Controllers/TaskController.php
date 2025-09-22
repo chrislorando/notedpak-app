@@ -61,13 +61,18 @@ class TaskController extends Controller
         $sortBy = 'description';
         $sortOrder = 'asc';
   
-        $tasks = auth()->user()->tasks()
-        ->with(['project','attachments'])
-        ->whereLike('description',  '%'.$request->query('q').'%')
-        ->orderBy($sortBy, $sortOrder)
-        ->limit(value: 20)
-        ->get();
+        if($request->query('q')==null){
+            $tasks = [];
+        }else{
+            $tasks = auth()->user()->tasks()
+            ->with(['project','attachments'])
+            ->whereLike('description',  '%'.$request->query('q').'%')
+            ->orderBy($sortBy, $sortOrder)
+            ->limit(value: 50)
+            ->get();
+        }
 
+    
         $projects = auth()->user()->projects()
         ->limit(value: 10)
         ->get();
@@ -194,6 +199,7 @@ class TaskController extends Controller
         $model->categories = $request->categories;
         $model->save();
 
+        // return redirect()->back()->with('task', $model);
         // return redirect()->route('projects.show', $model->project->uuid)->with('success', 'Task created successfully.');
 
     }
