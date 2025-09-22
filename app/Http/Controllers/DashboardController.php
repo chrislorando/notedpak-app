@@ -16,56 +16,31 @@ class DashboardController extends Controller
         $startDate = Carbon::now()->subDays(7); // or Carbon::now()->subDays(6);
         $endDate = Carbon::now();
 
-        // Get completed tasks
-        $completed = Task::selectRaw('
-                DATE(completed_at) as date,
-                COUNT(*) as completed
-            ')
-            ->whereNotNull('completed_at')
-            ->whereBetween('completed_at', [$startDate, $endDate])
-            ->groupBy('date')
-            ->pluck('completed', 'date')
-            ->toArray();
+        $totalProject = Project::where('user_id', auth()->user()->id)
+            // ->whereBetween('created_at', [$startDate->startOfDay(), $endDate->endOfDay()])
+            ->count();
 
-        // Get pending tasks
-        $pending = Task::selectRaw('
-                DATE(created_at) as date,
-                COUNT(*) as pending
-            ')
-            ->whereNull('completed_at')
-            ->whereBetween('created_at', [$startDate, $endDate])
-            ->groupBy('date')
-            ->pluck('pending', 'date')
-            ->toArray();
+        $totalTask = Task::where('owner_id', auth()->user()->id)
+            // ->whereBetween('created_at', [$startDate->startOfDay(), $endDate->endOfDay()])
+            ->count();
 
-        // 3. Build full date list
-        $dates = [];
-        $currentDate = $startDate->copy();
-        while ($currentDate <= $endDate) {
-            $dates[] = $currentDate->format('Y-m-d');
-            $currentDate->addDay();
-        }
+        $totalDraftTask = Task::where('owner_id', auth()->user()->id)
+            ->where('is_completed', false)
+            ->count();
 
-         // 4. Build chartData
-        $chartData = [];
-        foreach ($dates as $date) {
-            $chartData[] = [
-                'date' => Carbon::parse($date)->format('d/m/Y'),
-                'pending' => isset($pending[$date]) ? (int) $pending[$date] : 0,
-                'completed' => isset($completed[$date]) ? (int) $completed[$date] : 0,
-            ];
-        }
+        $totalDoneTask = Task::where('owner_id', auth()->user()->id)
+            ->where('is_completed', true)
+            ->count();
 
     
         
-        return Inertia::render('dashboard', [
-            'totalProject' => auth()->user()->projects()->count(),
-            'totalTask' => auth()->user()->tasks()->count(),
-            'totalCompletedTask' => auth()->user()->tasks()->completed()->count(),
-            'totalDraftTask' => auth()->user()->tasks()->draft()->count(),
-            'chartData' => $chartData,
+        return Inertia::render('Dashboard', [
+            
+            'totalProject' => $totalProject,
+            'totalTask' => $totalTask,
+            'totalDraftTask' => $totalDraftTask,
+            'totalDoneTask' => $totalDoneTask,
    
-           
         ]);
     }
 }
