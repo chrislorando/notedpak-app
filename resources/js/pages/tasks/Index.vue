@@ -60,6 +60,7 @@ import {
     File,
     List,
     ListEndIcon,
+    ListOrdered,
     PanelRightClose,
     Star,
     StickyNote,
@@ -70,31 +71,26 @@ import {
 import { ComboboxContent, DateValue } from 'reka-ui';
 import { computed, onMounted, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
+import draggable from 'vuedraggable';
 
+// Define props with TypeScript type
+const props = defineProps<{ project: any; draftTasks: any; completedTasks: any; categoryOptions: any; listOptions: any }>();
+
+const initProject = ref<any>(props.project);
+const localDraftTasks = ref([...props.draftTasks]);
+const activeTask = ref();
+const openTaskSheet = ref(false);
+const sort = ref('position');
+const lists = ref<any>(props.listOptions);
+const categories = ref<any>(props.categoryOptions);
+const selectedList = ref<(typeof props.listOptions)[0] | undefined>();
+const selectedDueDate = ref<DateValue>();
 const breadcrumbs = ref<BreadcrumbItem[]>([
     {
         title: 'Tasks',
         href: 'tasks',
     },
 ]);
-
-onMounted(() => {
-    console.log('ADD OVERFLOW 1');
-    window.scrollTo(0, 0);
-    document.body.classList.add('overflow-hidden');
-});
-
-// Define props with TypeScript type
-const props = defineProps<{ project: any; draftTasks: any; completedTasks: any; categoryOptions: any; listOptions: any }>();
-
-const initProject = ref<any>(props.project);
-const activeTask = ref();
-const openTaskSheet = ref(false);
-const sort = ref('description');
-const lists = ref<any>(props.listOptions);
-const categories = ref<any>(props.categoryOptions);
-const selectedList = ref<(typeof props.listOptions)[0] | undefined>();
-const selectedDueDate = ref<DateValue>();
 
 const form = useForm({
     description: '',
@@ -103,6 +99,29 @@ const form = useForm({
     categories: '',
     project_uuid: '',
     attachment: '',
+});
+
+const emit = defineEmits<{
+    (e: 'update:draftTasks', value: any[]): void;
+}>();
+
+// sync props -> local
+watch(
+    () => props.draftTasks,
+    (val) => {
+        localDraftTasks.value = [...val];
+    },
+);
+
+// sync local -> emit ke parent
+watch(localDraftTasks, (val) => {
+    emit('update:draftTasks', val);
+});
+
+onMounted(() => {
+    console.log('ADD OVERFLOW 1');
+    window.scrollTo(0, 0);
+    document.body.classList.add('overflow-hidden');
 });
 
 watch(
@@ -374,6 +393,22 @@ const moveTask = (taskId: string) => {
         },
     );
 };
+
+const onReorder = () => {
+    const ordered = localDraftTasks.value.map((item, index) => ({
+        id: item.uuid,
+        position: index + 1,
+    }));
+
+    router.patch(
+        '/tasks/reorder',
+        { ordered },
+        {
+            preserveScroll: true,
+            preserveState: true,
+        },
+    );
+};
 </script>
 
 <template>
@@ -397,6 +432,7 @@ const moveTask = (taskId: string) => {
                             <DropdownMenuLabel>Sort by</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuRadioGroup v-model="sort" @update:modelValue="submitSort">
+                                <DropdownMenuRadioItem value="position"><ListOrdered /> Default</DropdownMenuRadioItem>
                                 <DropdownMenuRadioItem value="is_important"><Star /> Importance</DropdownMenuRadioItem>
                                 <DropdownMenuRadioItem value="due_date"><CalendarDays /> Due date</DropdownMenuRadioItem>
                                 <DropdownMenuRadioItem value="description"><ArrowUpDown /> Alphabetically</DropdownMenuRadioItem>
@@ -451,56 +487,59 @@ const moveTask = (taskId: string) => {
             <ScrollArea class="mt-20 h-[calc(100vh-200px)] w-[calc(100%+20px)] rounded-md border-0 pb-10">
                 <div class="flex w-[calc(100%-20px)] flex-col gap-2">
                     <ul>
-                        <li
-                            @click.stop="showSheet(item.uuid)"
-                            v-bind:key="item.id"
-                            v-for="item in draftTasks"
-                            class="mb-2 flex items-center justify-between rounded-sm border p-4 shadow dark:bg-zinc-900"
-                        >
-                            <div class="flex items-start space-x-3">
-                                <Checkbox
-                                    @click.stop
-                                    @update:model-value="completeTask(item.uuid)"
-                                    class="rounded-2xl border-foreground"
-                                    :style="{ borderColor: project.color }"
-                                />
-                                <label class="text-sm leading-4 font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                                    {{ item.description }}
-                                    <div class="mt-2 flex flex-wrap gap-2 text-xs">
-                                        <!-- Due Date -->
-                                        <span v-if="item.due_date" class="flex items-center gap-1 text-gray-400">
-                                            <CalendarDaysIcon class="h-3.5 w-3.5" />
-                                            {{ customFormatDate(item.due_date) }}
-                                        </span>
+                        <draggable v-model="localDraftTasks" item-key="title" @end="onReorder">
+                            <template #item="{ element: item }">
+                                <li
+                                    @click.stop="showSheet(item.uuid)"
+                                    v-bind:key="item.id"
+                                    class="mb-2 flex items-center justify-between rounded-sm border p-4 shadow dark:bg-zinc-900"
+                                >
+                                    <div class="flex items-start space-x-3">
+                                        <Checkbox
+                                            @click.stop
+                                            @update:model-value="completeTask(item.uuid)"
+                                            class="rounded-2xl border-foreground"
+                                            :style="{ borderColor: project.color }"
+                                        />
+                                        <label class="text-sm leading-4 font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                            {{ item.description }}
+                                            <div class="mt-2 flex flex-wrap gap-2 text-xs">
+                                                <!-- Due Date -->
+                                                <span v-if="item.due_date" class="flex items-center gap-1 text-gray-400">
+                                                    <CalendarDaysIcon class="h-3.5 w-3.5" />
+                                                    {{ customFormatDate(item.due_date) }}
+                                                </span>
 
-                                        <!-- Note -->
-                                        <span v-if="item.note" class="flex items-center gap-1 text-gray-400">
-                                            <StickyNote class="h-3.5 w-3.5" />
-                                            Note
-                                        </span>
+                                                <!-- Note -->
+                                                <span v-if="item.note" class="flex items-center gap-1 text-gray-400">
+                                                    <StickyNote class="h-3.5 w-3.5" />
+                                                    Note
+                                                </span>
 
-                                        <!-- Categories - FIXED -->
-                                        <template v-if="item.categories && item.categories.length">
-                                            <span
-                                                v-for="(cat, index) in JSON.parse(item.categories)"
-                                                :key="index"
-                                                :class="[
-                                                    'flex items-center gap-1 text-xs capitalize',
-                                                    categories.find((c: any) => c.value === cat)?.class,
-                                                ]"
-                                            >
-                                                <Circle class="h-2.5 w-2.5" />
-                                                {{ cat }} category
-                                            </span>
-                                        </template>
+                                                <!-- Categories - FIXED -->
+                                                <template v-if="item.categories && item.categories.length">
+                                                    <span
+                                                        v-for="(cat, index) in JSON.parse(item.categories)"
+                                                        :key="index"
+                                                        :class="[
+                                                            'flex items-center gap-1 text-xs capitalize',
+                                                            categories.find((c: any) => c.value === cat)?.class,
+                                                        ]"
+                                                    >
+                                                        <Circle class="h-2.5 w-2.5" />
+                                                        {{ cat }} category
+                                                    </span>
+                                                </template>
+                                            </div>
+                                        </label>
                                     </div>
-                                </label>
-                            </div>
 
-                            <button type="button" class="text-gray-400 hover:text-yellow-500" @click.stop="bookmarkTask(item.uuid)">
-                                <Star :size="18" :fill="item.is_important ? project.color : ''" />
-                            </button>
-                        </li>
+                                    <button type="button" class="text-gray-400 hover:text-yellow-500" @click.stop="bookmarkTask(item.uuid)">
+                                        <Star :size="18" :fill="item.is_important ? project.color : ''" />
+                                    </button>
+                                </li>
+                            </template>
+                        </draggable>
                     </ul>
 
                     <Collapsible :default-open="completedTasks.length > 0" :hidden="completedTasks.length === 0" class="mt-1 w-full space-y-3">

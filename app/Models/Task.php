@@ -23,7 +23,8 @@ class Task extends Model
         'is_completed',
         'is_important',
         'completed_at',
-        'categories'
+        'categories',
+        'position'
     ];
 
     protected $casts = [

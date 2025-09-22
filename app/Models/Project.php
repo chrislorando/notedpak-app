@@ -16,7 +16,8 @@ class Project extends Model
         'name',
         'description',
         'user_id',
-        'color'
+        'color',
+        'position'
     ];
 
     protected static function booted()

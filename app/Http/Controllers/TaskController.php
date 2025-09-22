@@ -19,8 +19,8 @@ class TaskController extends Controller
      */
     public function index(Request $request, string $uuid)
     {
-        $sortBy = $request->query('sort') ?? 'description';
-        $sortOrder = $sortBy=='description' ? 'asc' : 'desc';
+        $sortBy = $request->query('sort') ?? 'position';
+        $sortOrder = $sortBy=='position' || $sortBy=='description' ? 'asc' : 'desc';
   
         $project = auth()->user()->projects()->where('uuid', $uuid)->firstOrFail();
         $projects = auth()->user()->projects()
@@ -270,11 +270,13 @@ class TaskController extends Controller
             \DB::beginTransaction();
 
             $task = Task::with(['attachments'])->where('uuid', $id)->firstOrFail();
+            $lastPosition = Task::where('project_id', $request->project_id)->max('position');
 
             $copy = $task->replicate();
 
             $copy->project_id = $request->project_id;
             $copy->uuid = Str::uuid();
+            $copy->position = $lastPosition + 1;
             $copy->created_at = now();
             $copy->updated_at = now();
             $copy->save();
@@ -356,5 +358,15 @@ class TaskController extends Controller
             Storage::disk($disk)->delete($path);
         }
         $model->delete();
+    }
+
+    public function reorder(Request $request)
+    {
+        $ordered = $request->input('ordered'); 
+
+        foreach ($ordered as $item) {
+            Task::where('uuid', $item['id'])
+                ->update(['position' => $item['position']]);
+        }
     }
 }

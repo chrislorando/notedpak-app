@@ -4,7 +4,7 @@ import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { LayoutGrid, List, Star } from 'lucide-vue-next';
+import { LayoutGrid, List } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 import AppLogo from './AppLogo.vue';
 import NavTodo from './NavTodo.vue';
@@ -19,11 +19,11 @@ const mainNavItems: NavItem[] = [
         href: '/dashboard',
         icon: LayoutGrid,
     },
-    {
-        title: 'Important',
-        href: '/important',
-        icon: Star,
-    },
+    // {
+    //     title: 'Important',
+    //     href: '/important',
+    //     icon: Star,
+    // },
     // {
     //     title: 'Assigned to me',
     //     href: '/dashboard',
@@ -52,6 +52,7 @@ watch(
         const lists = Array.isArray(newVal) ? newVal : [];
 
         todoNavItems.value = lists.map((list) => ({
+            uuid: list.uuid,
             title: list.name,
             href: `/tasks/${list.uuid}`,
             icon: List,

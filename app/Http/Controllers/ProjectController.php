@@ -38,6 +38,7 @@ class ProjectController extends Controller
             //     $query->select('id', 'name', 'description', 'project_id', 'user_id')->draft();
             // }])
             ->withCount('draftTasks')
+            ->orderBy('position', 'asc')
         ->get();
 
         $tasks =  auth()->user()?->tasks()->importantDraft()->count();
@@ -189,12 +190,14 @@ class ProjectController extends Controller
 
             $project = Project::with(['tasks.attachments'])->where('uuid', $id)->firstOrFail();
             $baseName = $project->name;
-            $count = Project::where('name', 'LIKE', $baseName . '%')->count();
+            $count = Project::where('user_id', auth()->user()->id)->where('name', 'LIKE', $baseName . '%')->count();
+            $lastPosition = Project::where('user_id', auth()->user()->id)->max('position');
 
             $copy = $project->replicate();
 
             $copy->uuid = Str::uuid();
             $copy->name = $baseName . ' (' . $count . ')';
+            $copy->position = $lastPosition + 1;
             $copy->created_at = now();
             $copy->updated_at = now();
             $copy->save();
@@ -220,6 +223,16 @@ class ProjectController extends Controller
         } catch (\Exception $e) {
             \DB::rollBack();
             return response()->json(['error' => 'Failed to copy project: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function reorder(Request $request)
+    {
+        $ordered = $request->input('ordered'); 
+
+        foreach ($ordered as $item) {
+            Project::where('uuid', $item['id'])
+                ->update(['position' => $item['position']]);
         }
     }
 }

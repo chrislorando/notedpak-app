@@ -19,6 +19,7 @@ Route::get('dashboard', function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('projects/copy/{id}', [ProjectController::class, 'copyList'])->name('projects.copy');
+    Route::patch('projects/reorder', [ProjectController::class, 'reorder'])->name('projects.reorder');
     Route::resource('projects', ProjectController::class);
     // Route::resource('tasks', TaskController::class);
 
@@ -34,6 +35,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('tasks/{id}', [TaskController::class, 'destroy'])->name('tasks.destroy');
     Route::post('tasks/upload-file/{id}', [TaskController::class, 'uploadFile'])->name('tasks.upload-file');
     Route::delete('tasks/delete-file/{id}', [TaskController::class, 'deleteFile'])->name('tasks.delete-file');
+    Route::patch( 'tasks/reorder', [TaskController::class, 'reorder'])->name('tasks.reorder');
    
 });
 
