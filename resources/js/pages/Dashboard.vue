@@ -7,7 +7,6 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import { List, ListChecks, ListTodo, NotebookText } from 'lucide-vue-next';
-import PlaceholderPattern from '../components/PlaceholderPattern.vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -25,47 +24,55 @@ defineProps<{ totalProject: any; totalTask: any; totalDraftTask: any; totalDoneT
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-2 md:p-4">
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <div class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+                <div
+                    class="relative aspect-video h-40 w-full overflow-hidden rounded-xl border border-sidebar-border/70 md:h-full dark:border-sidebar-border"
+                >
                     <Card class="h-full">
                         <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle class="text-sm font-medium"> Total Project </CardTitle>
                             <NotebookText class="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div class="text-4xl font-bold md:text-5xl">{{ totalProject }}</div>
+                            <div class="text-4xl font-bold md:text-4xl">{{ totalProject }}</div>
                         </CardContent>
                     </Card>
                 </div>
-                <div class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+                <div
+                    class="relative aspect-video h-40 w-full overflow-hidden rounded-xl border border-sidebar-border/70 md:h-full dark:border-sidebar-border"
+                >
                     <Card class="h-full">
                         <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle class="text-sm font-medium"> Total Task </CardTitle>
                             <List class="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div class="text-4xl font-bold md:text-5xl">{{ totalTask }}</div>
+                            <div class="text-4xl font-bold md:text-4xl">{{ totalTask }}</div>
                         </CardContent>
                     </Card>
                 </div>
-                <div class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+                <div
+                    class="relative aspect-video h-40 w-full overflow-hidden rounded-xl border border-sidebar-border/70 md:h-full dark:border-sidebar-border"
+                >
                     <Card class="h-full">
                         <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle class="text-sm font-medium"> Uncompleted Task </CardTitle>
                             <ListTodo class="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div class="text-4xl font-bold text-[var(--destructive)] md:text-5xl">{{ totalDraftTask }}</div>
+                            <div class="text-4xl font-bold text-[var(--destructive)] md:text-4xl">{{ totalDraftTask }}</div>
                         </CardContent>
                     </Card>
                 </div>
-                <div class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+                <div
+                    class="relative aspect-video h-40 w-full overflow-hidden rounded-xl border border-sidebar-border/70 md:h-full dark:border-sidebar-border"
+                >
                     <Card class="h-full">
                         <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle class="text-sm font-medium"> Completed Task </CardTitle>
                             <ListChecks class="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div class="text-4xl font-bold text-[var(--primary)] md:text-5xl">{{ totalDoneTask }}</div>
+                            <div class="text-4xl font-bold text-[var(--primary)] md:text-4xl">{{ totalDoneTask }}</div>
                         </CardContent>
                     </Card>
                 </div>
@@ -95,9 +102,9 @@ defineProps<{ totalProject: any; totalTask: any; totalDraftTask: any; totalDoneT
                     </CardContent>
                 </Card>
             </div>
-            <div class="relative mt-2 h-full flex-1 rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border">
+            <!-- <div class="relative mt-2 h-full flex-1 rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border">
                 <PlaceholderPattern />
-            </div>
+            </div> -->
 
             <!-- Recent Activity Section -->
             <div class="mt-4">
