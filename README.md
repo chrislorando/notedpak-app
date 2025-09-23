@@ -3,11 +3,11 @@
 <table>
   <tr>
     <td>
-      <strong>Upload file</strong><br>
+      <strong>Dashboard</strong><br>
       <img src="https://github.com/user-attachments/assets/0f2a6e2c-4263-480c-a2cf-e1244c0020ac" width="100%">
     </td>
     <td>
-      <strong>View chats</strong><br>
+      <strong>View tasks</strong><br>
       <img src="https://github.com/user-attachments/assets/4f87c200-977e-45ab-ac56-06dba7443314" width="100%">
     </td>
   </tr>
