@@ -1,6 +1,18 @@
 # NOTEDPAK
 
-![image](https://github.com/user-attachments/assets/6d56b119-c986-47c7-a3b4-f091fc5cbfd1)
+<table>
+  <tr>
+    <td>
+      <strong>Upload file</strong><br>
+      <img src="https://github.com/user-attachments/assets/0f2a6e2c-4263-480c-a2cf-e1244c0020ac" width="100%">
+    </td>
+    <td>
+      <strong>View chats</strong><br>
+      <img src="https://github.com/user-attachments/assets/4f87c200-977e-45ab-ac56-06dba7443314" width="100%">
+    </td>
+  </tr>
+ 
+</table>
 
 NotedPak is a modern to-do list application inspired by the spirit of discipline and accountability found in Indonesian culture. The name reflects the respectful phrase "Noted, Pak!" which means "Understood, Sir!" — a way to acknowledge and accept tasks with commitment and without hesitation.
 
