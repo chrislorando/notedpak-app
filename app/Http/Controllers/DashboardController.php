@@ -32,15 +32,42 @@ class DashboardController extends Controller
             ->where('is_completed', true)
             ->count();
 
-    
+        $projects = Project::withCount([
+            'tasks as total' => fn ($q) => $q,
+            'tasks as draft' => fn ($q) => $q->where('is_completed', 0),
+            'tasks as complete' => fn ($q) => $q->where('is_completed', 1),
+        ])
+        ->where('user_id', auth()->user()->id)
+        ->whereRaw('(select count(*) from tasks where projects.id = tasks.project_id and is_completed = 0) > 0')
+        ->orderBy('created_at', 'asc')
+        ->limit(5)
+        ->get();
+
+        $chartData = $projects->map(function ($project) {
+            return [
+                'name' => $project->name,
+                'total' => $project->total,
+                'draft' => $project->draft,
+                'complete' => $project->complete,
+                // 'color' => $project->color,
+            ];
+        });
+
+        $dueDates = Task::with('project')->where('owner_id', auth()->user()->id)
+            ->where('is_completed', false)
+            ->whereNotNull('due_date')
+            ->limit(6)
+            ->orderBy('due_date', 'asc')
+            ->get();
+
         
         return Inertia::render('Dashboard', [
-            
             'totalProject' => $totalProject,
             'totalTask' => $totalTask,
             'totalDraftTask' => $totalDraftTask,
             'totalDoneTask' => $totalDoneTask,
-   
+            'chartData' => $chartData,
+            'dueDates' => $dueDates,
         ]);
     }
 }
