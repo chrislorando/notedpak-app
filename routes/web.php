@@ -6,19 +6,20 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TaskController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Illuminate\Http\Request;
 
 // Route::get('/', function () {
 //     return Inertia::render('Welcome');
 // })->name('home');
 
-Route::get('/', [AuthenticatedSessionController::class, 'create'])
-        ->name('home');
+Route::get('/', [AuthenticatedSessionController::class, 'create'])->name('home');
 
 // Route::get('dashboard', function () {
 //     return Inertia::render('Dashboard');
 // })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/', [DashboardController::class, 'index'])->name('home');
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::patch('projects/copy/{id}', [ProjectController::class, 'copyList'])->name('projects.copy');
@@ -27,6 +28,27 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Route::resource('tasks', TaskController::class);
 
     Route::get('tasks', [TaskController::class, 'search'])->name('tasks.search');
+    Route::get('tasks/download-file', function(Request $request){
+        $fullUrl = $request->file; 
+
+        $parsedPath = parse_url($fullUrl, PHP_URL_PATH); 
+        $relativePath = ltrim($parsedPath, '/todo/');
+
+        $originalName = basename($relativePath);
+        $extension = pathinfo($originalName, PATHINFO_EXTENSION);
+
+        $customName = 'Todo_file_'. now()->format('YmdHis').'.' . $extension;
+
+        $stream = Storage::disk('s3')->readStream($relativePath);
+
+        return response()->stream(function() use ($stream) {
+            fpassthru($stream);
+        }, 200, [
+            'Content-Type' => Storage::disk('s3')->mimeType($relativePath),
+            'Content-Length' => Storage::disk('s3')->size($relativePath),
+            'Content-Disposition' => 'attachment; filename="'.$customName.'"',
+        ]);
+    })->name('tasks.download-file');
     Route::get('tasks/search-list-options', [TaskController::class, 'searchListOptions'])->name('tasks.search-list-options');
     Route::get('tasks/{uuid}', [TaskController::class, 'index'])->name('tasks.show');
     Route::post('tasks', [TaskController::class, 'store']);
@@ -39,6 +61,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('tasks/upload-file/{id}', [TaskController::class, 'uploadFile'])->name('tasks.upload-file');
     Route::delete('tasks/delete-file/{id}', [TaskController::class, 'deleteFile'])->name('tasks.delete-file');
     Route::patch( 'tasks/reorder', [TaskController::class, 'reorder'])->name('tasks.reorder');
+
+   
    
 });
 

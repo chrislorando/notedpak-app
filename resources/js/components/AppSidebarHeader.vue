@@ -80,7 +80,7 @@ watch(search, (val) => {
                 <!-- Desktop -->
                 <div class="hidden w-60 items-center md:flex">
                     <Input
-                        id="search"
+                        id="search1"
                         type="text"
                         placeholder="Search..."
                         class="w-full border border-gray-500 pl-10"
@@ -102,7 +102,7 @@ watch(search, (val) => {
 
                     <div v-else class="relative flex w-full items-center">
                         <Input
-                            id="search"
+                            id="search2"
                             type="text"
                             placeholder="Search..."
                             class="w-full border border-gray-500 pr-10"
@@ -110,9 +110,10 @@ watch(search, (val) => {
                             autofocus
                             v-model="search"
                             ref="searchInput"
+                            @click.stop
                         />
                         <span class="absolute inset-y-0 end-0 flex items-center px-2">
-                            <Button variant="ghost" @click="showSearch = false">
+                            <Button variant="ghost" @click.stop="showSearch = false">
                                 <X class="size-6 text-muted-foreground" />
                             </Button>
                         </span>

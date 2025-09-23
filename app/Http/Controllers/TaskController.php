@@ -349,7 +349,7 @@ class TaskController extends Controller
             $parsedUrl = parse_url($model->url, PHP_URL_PATH);
 
             $path = ltrim($parsedUrl, '/');
-            $bucket = config('filesystems.disks.minio.bucket');
+            $bucket = config('filesystems.disks.minio.bucket', 'todo');
             if (str_starts_with($path, $bucket . '/')) {
                 $path = substr($path, strlen($bucket) + 1);
             }

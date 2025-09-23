@@ -116,6 +116,7 @@ watch(
 // sync local -> emit ke parent
 watch(localDraftTasks, (val) => {
     emit('update:draftTasks', val);
+    console.log('CHECKBOX', localDraftTasks);
 });
 
 onMounted(() => {
@@ -487,7 +488,7 @@ const onReorder = () => {
             <ScrollArea class="mt-20 h-[calc(100vh-200px)] w-[calc(100%+20px)] rounded-md border-0 pb-10">
                 <div class="flex w-[calc(100%-20px)] flex-col gap-2">
                     <ul>
-                        <draggable v-model="localDraftTasks" item-key="title" @end="onReorder">
+                        <draggable v-model="localDraftTasks" item-key="uuid" @end="onReorder">
                             <template #item="{ element: item }">
                                 <li
                                     @click.stop="showSheet(item.uuid)"
@@ -713,7 +714,13 @@ const onReorder = () => {
                                         </div>
                                     </div>
                                     <div class="min-w-0 flex-1">
-                                        <p class="truncate text-sm font-medium text-gray-900 dark:text-white">{{ file.name }}</p>
+                                        <!-- <p class="truncate text-sm font-medium text-gray-900 dark:text-white">{{ file.name }}</p> -->
+                                        <a
+                                            :href="`/tasks/download-file?file=${file.file_url}`"
+                                            class="truncate text-sm font-medium text-gray-900 dark:text-white"
+                                        >
+                                            {{ file.name }}
+                                        </a>
                                         <p class="truncate text-sm text-gray-500 dark:text-gray-400">{{ file.size }}KB</p>
                                     </div>
                                     <div class="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">

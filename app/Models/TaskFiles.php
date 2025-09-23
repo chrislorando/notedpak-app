@@ -13,7 +13,7 @@ class TaskFiles extends Model
         'url',
     ];
 
-    protected $appends = ['extension'];
+    protected $appends = ['extension','file_url'];
 
     public function getExtensionAttribute(): ?string
     {
@@ -22,5 +22,10 @@ class TaskFiles extends Model
         }
 
         return pathinfo($this->url, PATHINFO_EXTENSION);
+    }
+
+    public function getFileUrlAttribute()
+    {
+        return $this->url ? asset($this->url) : null;
     }
 }
