@@ -689,7 +689,6 @@ const onReorder = () => {
                             id="attachment"
                             class="w-full resize-none border-0 pl-12"
                             name="attachment"
-                            autoComplete="off"
                             placeholder="Add file"
                             @change="(e: any) => uploadTaskFile(e, activeTask.uuid)"
                         />
