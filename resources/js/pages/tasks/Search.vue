@@ -325,7 +325,10 @@ const moveTask = (taskId: string) => {
                                 />
                                 <label class="text-sm leading-4 font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                                     <span :class="`${item.is_completed ? 'line-through' : ''}`">{{ item.description }}</span>
-                                    <div class="mt-2 flex flex-wrap gap-2 text-xs">
+                                    <div
+                                        v-if="item.due_date || item.note || (item.categories && item.categories.length)"
+                                        class="mt-2 flex flex-wrap gap-2 text-xs"
+                                    >
                                         <!-- Project -->
                                         <span v-if="item.project.name" class="flex items-center gap-1 text-gray-400">
                                             <ListIcon class="h-3.5 w-3.5" />

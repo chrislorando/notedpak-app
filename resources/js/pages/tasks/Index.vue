@@ -504,7 +504,10 @@ const onReorder = () => {
                                         />
                                         <label class="text-sm leading-4 font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                                             {{ item.description }}
-                                            <div class="mt-2 flex flex-wrap gap-2 text-xs">
+                                            <div
+                                                v-if="item.due_date || item.note || (item.categories && item.categories.length)"
+                                                class="mt-2 flex flex-wrap gap-2 text-xs"
+                                            >
                                                 <!-- Due Date -->
                                                 <span v-if="item.due_date" class="flex items-center gap-1 text-gray-400">
                                                     <CalendarDaysIcon class="h-3.5 w-3.5" />
@@ -573,7 +576,10 @@ const onReorder = () => {
                                         <label class="text-sm leading-4 font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                                             <span class="line-through">{{ item.description }}</span>
 
-                                            <div class="mt-1 flex flex-wrap gap-2 text-xs">
+                                            <div
+                                                v-if="item.due_date || item.note || (item.categories && item.categories.length)"
+                                                class="mt-2 flex flex-wrap gap-2 text-xs"
+                                            >
                                                 <!-- Due Date -->
                                                 <span v-if="item.due_date" class="flex items-center gap-1 text-gray-400">
                                                     <CalendarDaysIcon class="h-3.5 w-3.5" />
