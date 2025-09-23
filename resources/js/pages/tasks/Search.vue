@@ -54,11 +54,12 @@ import {
     Star,
     StickyNote,
     Tag,
+    TextSearchIcon,
     Trash2,
     X,
 } from 'lucide-vue-next';
 import { ComboboxContent, DateValue } from 'reka-ui';
-import { onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 
 // Define props with TypeScript type
@@ -66,6 +67,9 @@ const props = defineProps<{ tasks: any; categoryOptions: any; listOptions: any }
 const page = usePage();
 
 const search = ref<string>(String(page.props.search ?? ''));
+const searchValue = computed(() => page.props.search || '');
+const hasSearch = computed(() => searchValue.value !== '');
+
 const activeTask = ref();
 const openTaskSheet = ref(false);
 const lists = ref<any>(props.listOptions);
@@ -99,6 +103,7 @@ onMounted(() => {
 watch(
     () => page.props.search,
     (search: any) => {
+        console.log('SEARCH PROP', search);
         if (search) {
             breadcrumbs.value[0].title = `Searching for "${search}"`;
             props.tasks.value = props.tasks.value;
@@ -106,8 +111,6 @@ watch(
             breadcrumbs.value[0].title = `Searching for ""`;
             props.tasks.value = null;
         }
-
-        console.log('SEARCH PROP', props.tasks);
     },
     { immediate: true },
 );
@@ -293,9 +296,17 @@ const moveTask = (taskId: string) => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full w-full flex-1 flex-col gap-1 rounded-xl p-5" style="width: 100%">
             <ScrollArea class="h-[calc(100vh-65px)] w-[calc(100%+20px)] rounded-md border-0 pb-10">
-                <div v-if="tasks.length == 0" class="ms-auto flex flex-col items-center">
+                <div v-if="tasks.length == 0 && hasSearch" class="ms-auto flex flex-col items-center">
                     <SearchX class="mx-auto mt-20 mb-4 h-16 w-16 text-gray-400" />
-                    <p>We searched high and low but couldn't find what you're looking for.</p>
+                    <p class="text-center">
+                        We searched high and low <br />
+                        but couldn't find what you're looking for.
+                    </p>
+                </div>
+
+                <div v-else-if="tasks.length == 0 && !hasSearch" class="ms-auto flex flex-col items-center">
+                    <TextSearchIcon class="mx-auto mt-20 mb-4 h-16 w-16 text-gray-400" />
+                    <p>What are you looking for?</p>
                 </div>
                 <div class="flex w-[calc(100%-20px)] flex-col gap-2">
                     <ul>
