@@ -12,7 +12,7 @@ export interface BreadcrumbItem {
 }
 
 export interface NavItem {
-    uuid?: string | null;
+    id?: string | null;
     title: string;
     href: string;
     icon?: LucideIcon;

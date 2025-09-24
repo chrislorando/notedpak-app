@@ -11,8 +11,10 @@ class Project extends Model
 {
     use HasFactory;
 
+    protected $keyType = 'string';
+    public $incrementing = false;
+
     public $fillable = [
-        'uuid',
         'name',
         'description',
         'user_id',
@@ -23,13 +25,13 @@ class Project extends Model
     protected static function booted()
     {
         static::creating(function ($model) {
-            $model->uuid = Str::uuid();
-            $model->user_id = auth()->user()->id ?? 1;
+            $model->id = Str::uuid();
+            $model->user_id = auth()->user()->id ?? User::first()->id;
             // $model->user_id = 1;
         });
 
         static::updating(function ($model) {
-            $model->user_id = auth()->user()->id ?? 1;
+            $model->user_id = auth()->user()->id ?? User::first()->id;
             // $model->user_id = 1;
         });
 

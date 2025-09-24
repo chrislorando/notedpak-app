@@ -50,7 +50,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ]);
     })->name('tasks.download-file');
     Route::get('tasks/search-list-options', [TaskController::class, 'searchListOptions'])->name('tasks.search-list-options');
-    Route::get('tasks/{uuid}', [TaskController::class, 'index'])->name('tasks.show');
+    Route::get('tasks/{id}', [TaskController::class, 'index'])->name('tasks.show');
     Route::post('tasks', [TaskController::class, 'store']);
     Route::put('tasks/{id}', [TaskController::class, 'update'])->name('tasks.update');
     Route::patch('tasks/complete/{id}', [TaskController::class, 'complete'])->name('tasks.complete');

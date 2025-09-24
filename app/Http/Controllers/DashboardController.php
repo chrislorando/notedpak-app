@@ -34,11 +34,11 @@ class DashboardController extends Controller
 
         $projects = Project::withCount([
             'tasks as total' => fn ($q) => $q,
-            'tasks as draft' => fn ($q) => $q->where('is_completed', 0),
-            'tasks as complete' => fn ($q) => $q->where('is_completed', 1),
+            'tasks as draft' => fn ($q) => $q->where('is_completed', false),
+            'tasks as complete' => fn ($q) => $q->where('is_completed', true),
         ])
         ->where('user_id', auth()->user()->id)
-        ->whereRaw('(select count(*) from tasks where projects.id = tasks.project_id and is_completed = 0) > 0')
+        ->whereRaw('(select count(*) from tasks where projects.id = tasks.project_id and is_completed = false) > 0')
         ->orderBy('created_at', 'asc')
         ->limit(5)
         ->get();

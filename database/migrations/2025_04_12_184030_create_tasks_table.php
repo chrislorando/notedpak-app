@@ -12,11 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('tasks', function (Blueprint $table) {
-            $table->id();
-            $table->uuid();
-            $table->foreignId('project_id')->constrained()->onDelete('cascade');
-            $table->foreignId('owner_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('assignee_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('project_id')->constrained()->onDelete('cascade');
+            $table->foreignUuid('owner_id')->constrained('users')->onDelete('cascade');
+            $table->foreignUuid('assignee_id')->nullable()->constrained('users')->nullOnDelete();
             $table->string('description')->nullable();
             $table->string('note')->nullable();
             $table->date('due_date')->nullable();

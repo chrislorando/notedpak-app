@@ -11,6 +11,10 @@ use Str;
 class Task extends Model
 {
     use HasFactory;
+
+    protected $keyType = 'string';
+    public $incrementing = false;
+
     public $fillable = [
         'uuid',
         'name',
@@ -37,12 +41,12 @@ class Task extends Model
     protected static function booted()
     {
         static::creating(function ($model) {
-            $model->uuid = Str::uuid();
-            $model->owner_id = auth()->user()->id ?? 1;
+            $model->id = Str::uuid();
+            $model->owner_id = auth()->user()->id ?? User::first()->id;
         });
 
         static::updating(function ($model) {
-            $model->owner_id = auth()->user()->id ?? 1;
+            $model->owner_id = auth()->user()->id ?? User::first()->id;
             if($model->is_completed) {
                 $model->completed_at = now();
             }else{

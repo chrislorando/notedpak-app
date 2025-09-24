@@ -52,9 +52,9 @@ watch(
         const lists = Array.isArray(newVal) ? newVal : [];
 
         todoNavItems.value = lists.map((list) => ({
-            uuid: list.uuid,
+            id: list.id,
             title: list.name,
-            href: `/tasks/${list.uuid}`,
+            href: `/tasks/${list.id}`,
             icon: List,
             count: list.draft_tasks_count,
             color: list.color,

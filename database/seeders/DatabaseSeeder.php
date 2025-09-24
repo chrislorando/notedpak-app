@@ -8,6 +8,7 @@ use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Hash;
 use Illuminate\Database\Seeder;
+use Str;
 
 class DatabaseSeeder extends Seeder
 {
@@ -19,6 +20,7 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->create();
 
         User::factory()->create([
+            'id' => Str::uuid(),
             'name' => 'Test User',
             'email' => 'test@example.com',
             'password' => Hash::make('password'),
@@ -29,7 +31,7 @@ class DatabaseSeeder extends Seeder
         ->each(function ($project) {
             Task::factory(fake()->numberBetween(3, 10))->create([
                 'project_id' => $project->id,
-                'owner_id' => 1
+                'owner_id' => User::first()->id,
             ]);
         });
     }

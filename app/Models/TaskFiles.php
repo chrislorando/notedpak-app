@@ -3,9 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Str;
 
 class TaskFiles extends Model
 {
+    protected $keyType = 'string';
+    public $incrementing = false;
+
     public $fillable = [
         'task_id',
         'name',
@@ -14,6 +18,14 @@ class TaskFiles extends Model
     ];
 
     protected $appends = ['extension','file_url'];
+
+    protected static function booted()
+    {
+        static::creating(function ($model) {
+            $model->id = Str::uuid();
+        });
+
+    }
 
     public function getExtensionAttribute(): ?string
     {

@@ -17,12 +17,12 @@ class TaskController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request, string $uuid)
+    public function index(Request $request, string $id)
     {
         $sortBy = $request->query('sort') ?? 'position';
         $sortOrder = $sortBy=='position' || $sortBy=='description' ? 'asc' : 'desc';
   
-        $project = auth()->user()->projects()->where('uuid', $uuid)->firstOrFail();
+        $project = auth()->user()->projects()->where('id', $id)->firstOrFail();
         $projects = auth()->user()->projects()
         ->limit(value: 10)
         ->get();
@@ -37,7 +37,7 @@ class TaskController extends Controller
             //     'user_id' => $project->user_id,
             //     'created_at' => $project->created_at,
             //     'updated_at' => $project->updated_at,
-            //     'uuid' => $project->uuid,
+            //     'id' => $project->id,
             // ],
             'listOptions' => $projects,
             'categoryOptions' => collect(Category::cases())->map(fn($case) => [
@@ -107,18 +107,18 @@ class TaskController extends Controller
     {
         $request->validate([
             'description' => 'required|string|max:1000',
-            'project_uuid' => 'required|string',
+            'project_id' => 'required|string',
         ]);
 
-        // dd($request->project_uuid);
-        $project = auth()->user()->projects()->where('uuid', $request->project_uuid)->firstOrFail();
+        // dd($request->project_id);
+        $project = auth()->user()->projects()->where('id', $request->project_id)->firstOrFail();
 
         $model = new Task();
         $model->description = $request->description;
         $model->project_id = $project->id;
         $model->save();
 
-        return redirect()->route('projects.show', $project->uuid)->with('success', 'Task created successfully.');
+        return redirect()->route('projects.show', $project->id)->with('success', 'Task created successfully.');
     }
 
     /**
@@ -126,7 +126,7 @@ class TaskController extends Controller
      */
     public function show(string $id)
     {
-        $project = auth()->user()->projects()->where('uuid', $id)->firstOrFail();
+        $project = auth()->user()->projects()->where('id', $id)->firstOrFail();
 
         Inertia::share([
             'project' => fn () => [
@@ -138,9 +138,8 @@ class TaskController extends Controller
                 'user_id' => $project->user_id,
                 'created_at' => $project->created_at,
                 'updated_at' => $project->updated_at,
-                'uuid' => $project->uuid,
-                'edit_url'=> route('projects.edit', $project->uuid),
-                'delete_url'=> route('projects.destroy', $project->uuid),
+                'edit_url'=> route('projects.edit', $project->id),
+                'delete_url'=> route('projects.destroy', $project->id),
                 // 'importantTasks' => $project->tasks()->importantDraft()->get(),
             ],
           
@@ -192,7 +191,7 @@ class TaskController extends Controller
         ]);
 
         // dd($request->all());
-        $model = auth()->user()->tasks()->where('uuid', $id)->firstOrFail();
+        $model = auth()->user()->tasks()->where('id', $id)->firstOrFail();
         $model->description = $request->description;
         $model->note = $request->note;
         $model->due_date = $request->due_date;
@@ -200,7 +199,7 @@ class TaskController extends Controller
         $model->save();
 
         // return redirect()->back()->with('task', $model);
-        // return redirect()->route('projects.show', $model->project->uuid)->with('success', 'Task created successfully.');
+        // return redirect()->route('projects.show', $model->project->id)->with('success', 'Task created successfully.');
 
     }
 
@@ -209,7 +208,7 @@ class TaskController extends Controller
      */
     public function destroy(string $id)
     {
-        $model = auth()->user()->tasks()->where('uuid', $id)->first();
+        $model = auth()->user()->tasks()->where('id', $id)->first();
         if ($model) {
         
             foreach ($model->attachments as $file) {
@@ -236,7 +235,7 @@ class TaskController extends Controller
     
     public function complete(string $id)
     {
-        $task = Task::where('uuid', $id)->firstOrFail();
+        $task = Task::where('id', $id)->firstOrFail();
         $task->is_completed = !$task->is_completed;
         $task->save();
 
@@ -245,7 +244,7 @@ class TaskController extends Controller
 
     public function bookmark(string $id)
     {
-        $task = Task::where('uuid', $id)->firstOrFail();
+        $task = Task::where('id', $id)->firstOrFail();
         $task->is_important = !$task->is_important;
         $task->save();
 
@@ -269,13 +268,12 @@ class TaskController extends Controller
         try {
             \DB::beginTransaction();
 
-            $task = Task::with(['attachments'])->where('uuid', $id)->firstOrFail();
+            $task = Task::with(['attachments'])->where('id', $id)->firstOrFail();
             $lastPosition = Task::where('project_id', $request->project_id)->max('position');
 
             $copy = $task->replicate();
 
             $copy->project_id = $request->project_id;
-            $copy->uuid = Str::uuid();
             $copy->position = $lastPosition + 1;
             $copy->created_at = now();
             $copy->updated_at = now();
@@ -301,12 +299,11 @@ class TaskController extends Controller
     {
         try {
             \DB::beginTransaction();
-            $task = Task::with(['attachments'])->where('uuid', $id)->firstOrFail();
+            $task = Task::with(['attachments'])->where('id', $id)->firstOrFail();
 
             $copy = $task->replicate();
 
             $copy->project_id = $request->project_id;
-            $copy->uuid = Str::uuid();
             $copy->created_at = now();
             $copy->updated_at = now();
             $copy->save();
@@ -328,13 +325,13 @@ class TaskController extends Controller
         }
     }
 
-    public function uploadFile(Request $request, $uuid)
+    public function uploadFile(Request $request, $id)
     {
         if ($request->hasFile('attachment')) {
             $path = $request->file('attachment')->storePublicly('attachments');
 
             $file = new TaskFiles();
-            $file->task_id = Task::where('uuid', $uuid)->firstOrFail()->id;
+            $file->task_id = Task::where('id', $id)->firstOrFail()->id;
             $file->name = $request->file('attachment')->getClientOriginalName();
             $file->size = $request->file('attachment')->getSize();
             $file->url = Storage::url($path);
@@ -365,7 +362,7 @@ class TaskController extends Controller
         $ordered = $request->input('ordered'); 
 
         foreach ($ordered as $item) {
-            Task::where('uuid', $item['id'])
+            Task::where('id', $item['id'])
                 ->update(['position' => $item['position']]);
         }
     }

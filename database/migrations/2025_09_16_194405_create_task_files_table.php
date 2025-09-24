@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('task_files', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('task_id')->constrained()->onDelete('cascade');
+            $table->uuid('id')->primary();
+            $table->foreignUuid('task_id')->constrained()->onDelete('cascade');
             $table->string('name')->nullable();
             $table->string('size')->nullable();
             $table->string('url')->nullable();

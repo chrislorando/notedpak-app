@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,6 +18,7 @@ class ProjectFactory extends Factory
     public function definition(): array
     {
         return [
+            'id' => fake()->uuid(),
             'name' => fake()->randomElement([
                 'Website Redesign',
                 'Mobile App Development',
@@ -24,10 +26,9 @@ class ProjectFactory extends Factory
                 'Database Migration',
                 'Research & Analysis',
             ]),
-            'uuid' => fake()->uuid(),
             'description' => fake()->text(),
             'color' => fake()->hexColor(),
-            'user_id' => 1
+            'user_id' => User::first()->id,
         ];
     }
 }

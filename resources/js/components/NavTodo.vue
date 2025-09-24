@@ -40,7 +40,7 @@ watch(localItems, (val) => {
 
 const onReorder = () => {
     const ordered = localItems.value.map((item, index) => ({
-        id: item.uuid,
+        id: item.id,
         position: index + 1,
     }));
 
@@ -59,7 +59,7 @@ const onReorder = () => {
     <SidebarGroup class="px-2 py-0">
         <SidebarGroupLabel>{{ title }}</SidebarGroupLabel>
         <SidebarMenu>
-            <draggable v-model="localItems" item-key="title" @end="onReorder">
+            <draggable v-model="localItems" item-key="id" @end="onReorder">
                 <template #item="{ element: item }">
                     <SidebarMenuItem>
                         <SidebarMenuButton as-child :is-active="item.href === page.url" :tooltip="item.title">

@@ -90,7 +90,7 @@ const form = useForm({
     note: '',
     due_date: null as string | null,
     categories: '',
-    project_uuid: '',
+    project_id: '',
     attachment: '',
 });
 
@@ -122,24 +122,24 @@ watch(openTaskSheet, (val) => {
     }
 });
 
-function editTask(uuid: string) {
+function editTask(id: string) {
     form.due_date = selectedDueDate.value ? dateValueToString(selectedDueDate.value) : null;
     form.categories = JSON.stringify(form.categories);
     console.log('categories', form.categories);
-    form.put(route('tasks.update', uuid), {
+    form.put(route('tasks.update', id), {
         preserveScroll: true,
         preserveState: true,
         onSuccess: () => {
-            showSheet(uuid);
+            showSheet(id);
         },
     });
 }
 
-function uploadTaskFile(e: any, uuid: string) {
+function uploadTaskFile(e: any, id: string) {
     const data = new FormData();
     data.append('attachment', e.target.files[0]);
     console.log('UPLOAD', data);
-    router.post(route('tasks.upload-file', uuid), data, {
+    router.post(route('tasks.upload-file', id), data, {
         forceFormData: true,
         onProgress: (progress) => {
             form.progress = progress ?? null;
@@ -150,27 +150,27 @@ function uploadTaskFile(e: any, uuid: string) {
             console.log('UPLOADED', result);
             form.progress = null;
             if (openTaskSheet.value) {
-                setActiveTask(uuid);
+                setActiveTask(id);
             }
         },
     });
 }
 
-function deleteFile(uuid: string, id: string) {
-    router.delete(route('tasks.delete-file', id), {
+function deleteFile(task_id: string, file_id: string) {
+    router.delete(route('tasks.delete-file', file_id), {
         preserveScroll: true,
         preserveState: true,
         onSuccess: function (result) {
             if (openTaskSheet.value) {
-                setActiveTask(uuid);
+                setActiveTask(task_id);
             }
         },
     });
 }
 
-function completeTask(uuid: string) {
+function completeTask(id: string) {
     router.patch(
-        route('tasks.complete', uuid),
+        route('tasks.complete', id),
         {},
         {
             preserveScroll: true,
@@ -178,16 +178,16 @@ function completeTask(uuid: string) {
             onSuccess: function (result) {
                 console.log('COMPLETED', result);
                 if (openTaskSheet.value) {
-                    setActiveTask(uuid);
+                    setActiveTask(id);
                 }
             },
         },
     );
 }
 
-function bookmarkTask(uuid: string) {
+function bookmarkTask(id: string) {
     router.patch(
-        route('tasks.bookmark', uuid),
+        route('tasks.bookmark', id),
         {},
         {
             preserveScroll: true,
@@ -195,15 +195,15 @@ function bookmarkTask(uuid: string) {
             onSuccess: function (result) {
                 console.log('BOOKMARKED', result);
                 if (openTaskSheet.value) {
-                    setActiveTask(uuid);
+                    setActiveTask(id);
                 }
             },
         },
     );
 }
 
-function deleteTask(uuid: string) {
-    router.delete(route('tasks.destroy', uuid), {
+function deleteTask(id: string) {
+    router.delete(route('tasks.destroy', id), {
         preserveScroll: true,
         preserveState: true,
         onSuccess: function (result) {
@@ -214,8 +214,8 @@ function deleteTask(uuid: string) {
     });
 }
 
-function setActiveTask(uuid: string) {
-    const task = [...props.tasks].find((t) => t.uuid === uuid);
+function setActiveTask(id: string) {
+    const task = [...props.tasks].find((t) => t.id === id);
     activeTask.value = task;
     form.description = task.description || '';
     form.note = task.note || '';
@@ -225,9 +225,9 @@ function setActiveTask(uuid: string) {
     }
 }
 
-function showSheet(uuid: string) {
+function showSheet(id: string) {
     openTaskSheet.value = true;
-    setActiveTask(uuid);
+    setActiveTask(id);
 }
 
 const searchLists = async (q: string) => {
@@ -311,7 +311,7 @@ const moveTask = (taskId: string) => {
                 <div class="flex w-[calc(100%-20px)] flex-col gap-2">
                     <ul>
                         <li
-                            @click.stop="showSheet(item.uuid)"
+                            @click.stop="showSheet(item.id)"
                             v-bind:key="item.id"
                             v-for="item in tasks"
                             class="mb-2 flex items-center justify-between rounded-sm border p-4 shadow dark:bg-zinc-900"
@@ -319,7 +319,7 @@ const moveTask = (taskId: string) => {
                             <div class="flex items-start space-x-3">
                                 <Checkbox
                                     @click.stop
-                                    @update:model-value="completeTask(item.uuid)"
+                                    @update:model-value="completeTask(item.id)"
                                     class="rounded-2xl border-foreground"
                                     :style="{ borderColor: item.project?.color ?? '' }"
                                 />
@@ -365,7 +365,7 @@ const moveTask = (taskId: string) => {
                                 </label>
                             </div>
 
-                            <button type="button" class="text-gray-400 hover:text-yellow-500" @click.stop="bookmarkTask(item.uuid)">
+                            <button type="button" class="text-gray-400 hover:text-yellow-500" @click.stop="bookmarkTask(item.id)">
                                 <Star :size="18" :fill="item.is_important ? item.project.color : ''" />
                             </button>
                         </li>
@@ -387,7 +387,7 @@ const moveTask = (taskId: string) => {
                 <div class="mb-2 flex w-full items-center justify-between rounded-sm p-4 shadow dark:bg-zinc-900">
                     <Checkbox
                         @click.stop
-                        @update:model-value="completeTask(activeTask.uuid)"
+                        @update:model-value="completeTask(activeTask.id)"
                         class="me-4 items-center rounded-2xl border-foreground"
                         :default-value="activeTask.is_completed ? true : false"
                         :style="{ borderColor: activeTask.project.color ?? '' }"
@@ -400,13 +400,13 @@ const moveTask = (taskId: string) => {
                             :class="`${activeTask.is_completed ? 'line-through' : ''} min-h-[0px] w-full resize-none border-0`"
                             name="description"
                             v-model="form.description"
-                            @blur="editTask(activeTask.uuid)"
-                            @keydown.enter.prevent="editTask(activeTask.uuid)"
+                            @blur="editTask(activeTask.id)"
+                            @keydown.enter.prevent="editTask(activeTask.id)"
                             autoComplete="off"
                         />
                     </div>
 
-                    <button type="button" class="ms-4 text-gray-400 hover:text-yellow-500" @click.stop="bookmarkTask(activeTask.uuid)">
+                    <button type="button" class="ms-4 text-gray-400 hover:text-yellow-500" @click.stop="bookmarkTask(activeTask.id)">
                         <Star :fill="activeTask.is_important ? activeTask.project.color : ''" :size="18" />
                     </button>
                 </div>
@@ -418,12 +418,12 @@ const moveTask = (taskId: string) => {
                         title="Due"
                         class="w-full border-0"
                         v-model="selectedDueDate"
-                        @update:modelValue="editTask(activeTask.uuid)"
+                        @update:modelValue="editTask(activeTask.id)"
                     />
                 </div>
 
                 <div class="mb-2 flex w-full items-center justify-between rounded-sm p-2 shadow dark:bg-zinc-900">
-                    <Select :multiple="true" v-model="form.categories" @update:modelValue="editTask(activeTask.uuid)">
+                    <Select :multiple="true" v-model="form.categories" @update:modelValue="editTask(activeTask.id)">
                         <SelectTrigger class="w-full border-0">
                             <div class="flex items-center gap-2">
                                 <Tag class="me-2 h-4 w-4" />
@@ -450,7 +450,7 @@ const moveTask = (taskId: string) => {
                             name="attachment"
                             autoComplete="off"
                             placeholder="Add file"
-                            @change="(e: any) => uploadTaskFile(e, activeTask.uuid)"
+                            @change="(e: any) => uploadTaskFile(e, activeTask.id)"
                         />
 
                         <span class="absolute start-0 mt-2.5 flex items-center justify-center px-2">
@@ -477,7 +477,7 @@ const moveTask = (taskId: string) => {
                                         <p class="truncate text-sm text-gray-500 dark:text-gray-400">{{ file.size }}KB</p>
                                     </div>
                                     <div class="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                                        <Button variant="ghost" class="cursor-pointer" @click="deleteFile(activeTask.uuid, file.id)"><X /></Button>
+                                        <Button variant="ghost" class="cursor-pointer" @click="deleteFile(activeTask.id, file.id)"><X /></Button>
                                     </div>
                                 </div>
                             </li>
@@ -491,15 +491,15 @@ const moveTask = (taskId: string) => {
                         class="w-full resize-none border-0"
                         name="description"
                         v-model="form.note"
-                        @blur="editTask(activeTask.uuid)"
-                        @keydown.enter.prevent="editTask(activeTask.uuid)"
+                        @blur="editTask(activeTask.id)"
+                        @keydown.enter.prevent="editTask(activeTask.id)"
                         autoComplete="off"
                         placeholder="Add note"
                     />
                 </div>
 
                 <div class="mb-2 flex w-full items-center justify-between rounded-sm p-2 shadow dark:bg-zinc-900">
-                    <Combobox v-model="selectedList" by="label" class="w-full" @update:modelValue="copyTask(activeTask.uuid)">
+                    <Combobox v-model="selectedList" by="label" class="w-full" @update:modelValue="copyTask(activeTask.id)">
                         <ComboboxAnchor as-child>
                             <ComboboxTrigger as-child>
                                 <Button variant="outline" class="flex w-full items-center gap-2">
@@ -538,7 +538,7 @@ const moveTask = (taskId: string) => {
                 </div>
 
                 <div class="flex w-full items-center justify-between rounded-sm p-2 shadow dark:bg-zinc-900">
-                    <Combobox v-model="selectedList" by="label" class="w-full" @update:modelValue="moveTask(activeTask.uuid)">
+                    <Combobox v-model="selectedList" by="label" class="w-full" @update:modelValue="moveTask(activeTask.id)">
                         <ComboboxAnchor as-child>
                             <ComboboxTrigger as-child>
                                 <Button variant="outline" class="flex w-full items-center gap-2">
@@ -598,7 +598,7 @@ const moveTask = (taskId: string) => {
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction @click.stop="deleteTask(activeTask.uuid)" class="bg-[var(--destructive)] text-white"
+                            <AlertDialogAction @click.stop="deleteTask(activeTask.id)" class="bg-[var(--destructive)] text-white"
                                 >Continue</AlertDialogAction
                             >
                         </AlertDialogFooter>

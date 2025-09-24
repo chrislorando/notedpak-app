@@ -25,7 +25,7 @@ class ProjectController extends Controller
 
         $projects = filled($search)
         ? auth()->user()->projects()
-            ->select('uuid', 'name', 'color', 'description')
+            ->select('id', 'name', 'color', 'description')
             // ->with(['tasks' => function ($query) {
             //     $query->select('id', 'name', 'description', 'project_id', 'user_id')->draft();
             // }])
@@ -33,7 +33,7 @@ class ProjectController extends Controller
             ->whereLike('name', '%'.$search.'%')
             ->get()
         : auth()->user()->projects()
-            ->select('uuid', 'name', 'color', 'description')
+            ->select('id', 'name', 'color', 'description')
             // ->with(['tasks' => function ($query) {
             //     $query->select('id', 'name', 'description', 'project_id', 'user_id')->draft();
             // }])
@@ -72,7 +72,7 @@ class ProjectController extends Controller
         // $model->color = $request->color;
         // $model->save();
 
-        return redirect()->route('tasks.show', $model->uuid)->with('success', 'Project created successfully.');
+        return redirect()->route('tasks.show', $model->id)->with('success', 'Project created successfully.');
     }
 
     /**
@@ -80,7 +80,7 @@ class ProjectController extends Controller
      */
     public function show(string $id)
     {
-        $project = auth()->user()->projects()->where('uuid', $id)->firstOrFail();
+        $project = auth()->user()->projects()->where('id', $id)->firstOrFail();
 
         Inertia::share([
             'project' => fn () => [
@@ -92,7 +92,6 @@ class ProjectController extends Controller
                 'user_id' => $project->user_id,
                 'created_at' => $project->created_at,
                 'updated_at' => $project->updated_at,
-                'uuid' => $project->uuid,
             ],
         ]);
     
@@ -123,7 +122,7 @@ class ProjectController extends Controller
             'name' => [
                 'required',
                 'min:2',
-                Rule::unique('projects')->ignore($id, 'uuid')->where(function ($query) {
+                Rule::unique('projects')->ignore($id, 'id')->where(function ($query) {
                     $query->where('user_id', auth()->id());
                 }),
             ],
@@ -132,13 +131,13 @@ class ProjectController extends Controller
         ]);
 
        
-        $model = auth()->user()->projects()->where('uuid', $id)->firstOrFail();
+        $model = auth()->user()->projects()->where('id', $id)->firstOrFail();
         $model->name = $request->name;
         $model->description = $request->description;
         $model->color = $request->color;
         $model->save();
 
-        return redirect()->route('projects.show', $model->uuid)->with('success', 'Project updated successfully.');
+        return redirect()->route('projects.show', $model->id)->with('success', 'Project updated successfully.');
     }
 
     /**
@@ -146,7 +145,7 @@ class ProjectController extends Controller
      */
     public function destroy(string $id)
     {
-        $model = auth()->user()->projects()->where('uuid', $id)->first();
+        $model = auth()->user()->projects()->where('id', $id)->first();
 
         $deletedCreatedAt = $model?->created_at;
 
@@ -156,7 +155,7 @@ class ProjectController extends Controller
                 ->latest()
                 ->first();
 
-            return redirect()->route('tasks.show', $latest?->uuid)->with('success', 'Project has been removed.');
+            return redirect()->route('tasks.show', $latest?->id)->with('success', 'Project has been removed.');
 
         }
 
@@ -167,7 +166,7 @@ class ProjectController extends Controller
     
     public function taskChange(Request $request, string $id)
     {
-        $task = Task::where('uuid', $request->uuid)->firstOrFail();
+        $task = Task::where('id', $request->id)->firstOrFail();
         $task->is_completed = $request->is_completed;
         $task->save();
 
@@ -176,7 +175,7 @@ class ProjectController extends Controller
 
     public function taskBookmark(Request $request, string $id)
     {
-        $task = Task::where('uuid', $request->uuid)->firstOrFail();
+        $task = Task::where('id', $request->id)->firstOrFail();
         $task->is_important = $request->is_important;
         $task->save();
 
@@ -188,14 +187,13 @@ class ProjectController extends Controller
         try {
             \DB::beginTransaction();
 
-            $project = Project::with(['tasks.attachments'])->where('uuid', $id)->firstOrFail();
+            $project = Project::with(['tasks.attachments'])->where('id', $id)->firstOrFail();
             $baseName = $project->name;
             $count = Project::where('user_id', auth()->user()->id)->where('name', 'LIKE', $baseName . '%')->count();
             $lastPosition = Project::where('user_id', auth()->user()->id)->max('position');
 
             $copy = $project->replicate();
 
-            $copy->uuid = Str::uuid();
             $copy->name = $baseName . ' (' . $count . ')';
             $copy->position = $lastPosition + 1;
             $copy->created_at = now();
@@ -205,7 +203,6 @@ class ProjectController extends Controller
             foreach ($project->tasks as $task) {
                 $taskCopy = $task->replicate();
                 $taskCopy->project_id = $copy->id;
-                $taskCopy->uuid = Str::uuid();
                 $taskCopy->created_at = now();
                 $taskCopy->updated_at = now();
                 $taskCopy->save();
@@ -231,7 +228,7 @@ class ProjectController extends Controller
         $ordered = $request->input('ordered'); 
 
         foreach ($ordered as $item) {
-            Project::where('uuid', $item['id'])
+            Project::where('id', $item['id'])
                 ->update(['position' => $item['position']]);
         }
     }
