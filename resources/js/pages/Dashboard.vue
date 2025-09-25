@@ -135,7 +135,7 @@ defineProps<{ totalProject: any; totalTask: any; totalDraftTask: any; totalDoneT
                             <ul class="space-y-2">
                                 <li class="flex flex-col" v-for="(task, index) in dueDates" :key="index">
                                     <!-- <a class="text-sm font-semibold">{{ task.description }}</a> -->
-                                    <Link :href="`tasks/${task.project.uuid}`" class="text-sm font-semibold" preserveState :preserveScroll="true">
+                                    <Link :href="`tasks/${task.project.id}`" class="text-sm font-semibold" preserveState :preserveScroll="true">
                                         <span>{{ task.description }}</span>
                                     </Link>
                                     <span class="flex items-center gap-1 text-xs text-muted-foreground"
