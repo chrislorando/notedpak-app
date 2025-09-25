@@ -225,6 +225,13 @@ function completeTask(id: string) {
             preserveState: true,
             onSuccess: function (result) {
                 console.log('COMPLETED', result);
+                const audio = new Audio('/servant-bell-ring-2-211683.mp3');
+                audio.play();
+
+                if (openTaskSheet.value) {
+                    setActiveTask(id);
+                }
+
                 if (openTaskSheet.value) {
                     setActiveTask(id);
                 }

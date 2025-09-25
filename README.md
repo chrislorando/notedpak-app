@@ -40,7 +40,8 @@ This project serves both as a learning medium to deepen my understanding of mode
 🎯 Discipline-Focused: UI/UX designed to promote accountability and task completion  
 🌐 Responsive Design: Works perfectly on desktop, tablet, and mobile  
 📊 Progress Tracking: Monitor your productivity and task completion rates  
-🔄 Real-time Sync: Keep your tasks synchronized across all devices
+🔄 Real-time Sync: Keep your tasks synchronized across all devices  
+📦 Drag & Drop: Reorder lists or projects, and tasks with intuitive drag-and-drop interactions
 
 ---
 
@@ -89,3 +90,7 @@ php artisan migrate:fresh --seed
 chmod -R 775 storage
 chmod -R 775 bootstrap/cache
 ```
+
+## Credits
+
+Sound Effect by <a href="https://pixabay.com/users/floraphonic-38928062/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=211683">floraphonic</a> from <a href="https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=211683">Pixabay</a>
