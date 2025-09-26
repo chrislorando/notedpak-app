@@ -21,6 +21,10 @@ Route::get('/', [AuthenticatedSessionController::class, 'create'])->name('home')
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('home');
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::post('dashboard/sync', [DashboardController::class, 'sync'])->name('dashboard.sync');
+    Route::get('dashboard/sync-status', [DashboardController::class, 'syncStatus'])->name('dashboard.sync-status');
+
+    // Route::resource('projects', ProjectController::class);
 
     Route::patch('projects/copy/{id}', [ProjectController::class, 'copyList'])->name('projects.copy');
     Route::patch('projects/reorder', [ProjectController::class, 'reorder'])->name('projects.reorder');

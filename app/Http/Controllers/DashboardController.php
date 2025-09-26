@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Project;
 use App\Models\Task;
+use Artisan;
 use Cache;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -68,6 +69,58 @@ class DashboardController extends Controller
             'totalDoneTask' => $totalDoneTask,
             'chartData' => $chartData,
             'dueDates' => $dueDates,
+        ]);
+    }
+
+    public function sync(Request $request)
+    {
+        // Cache::put('sync_status', ['status' => 'running', 'progress' => 0], 3600);
+
+        $commandUser = 'sync:user-sqlite-supabase';
+        $commandProject = 'sync:project-sqlite-supabase';
+        $commandTask = 'sync:task-sqlite-supabase';
+        $cleansing = 'cleanse:all';
+
+        if (strncasecmp(PHP_OS, 'WIN', 3) === 0) {
+            pclose(popen("start /B php \"" . base_path('artisan') . "\" $commandUser", "r"));
+            pclose(popen("start /B php \"" . base_path('artisan') . "\" $commandProject ", "r"));
+            pclose(popen("start /B php \"" . base_path('artisan') . "\" $commandTask ", "r"));
+            // pclose(popen("start /B php \"" . base_path('artisan') . "\" $cleansing ", "r"));
+        } else {
+            exec('php ' . base_path('artisan') . ' $commandUser > /dev/null 2>&1 &');
+            exec('php ' . base_path('artisan') . ' $commandProject > /dev/null 2>&1 &');
+            exec('php ' . base_path('artisan') . ' $commandTask > /dev/null 2>&1 &');
+            // exec('php ' . base_path('artisan') . ' $cleansing > /dev/null 2>&1 &');
+        }
+
+
+        return back();
+    }
+
+    public function syncStatus(Request $request)
+    {
+        $users = Cache::get('sync_users_progress', 0);
+        $projects = Cache::get('sync_projects_progress', 0);
+        $tasks = Cache::get('sync_tasks_progress', 0);
+
+        $progress = intval(($users + $projects + $tasks) / 3);
+
+        $status = $progress < 100 ? 'running' : 'done';
+
+        // Cache::put('sync_status', ['status' => $status, 'progress' => $progress], 3600);
+        // $status = Cache::get('sync_status', ['status' => 'idle', 'progress' => 0]);
+
+        if ($request->header('X-Inertia')) {
+            return back(); // atau Inertia::render(...) sesuai kebutuhan
+        }
+        // Cache::put('sync_tasks_progress', 100, 3600);
+        
+        return response()->json([
+            'status' => $status,
+            'progress' => $progress,
+            'users_progress' => $users,
+            'projects_progress' => $projects,
+            'tasks_progress' => $tasks,
         ]);
     }
 }

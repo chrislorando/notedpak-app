@@ -1,16 +1,21 @@
 <script setup lang="ts">
+import Alert from '@/components/ui/alert/Alert.vue';
+import AlertDescription from '@/components/ui/alert/AlertDescription.vue';
+import AlertTitle from '@/components/ui/alert/AlertTitle.vue';
+import Button from '@/components/ui/button/Button.vue';
 import Card from '@/components/ui/card/Card.vue';
 import CardContent from '@/components/ui/card/CardContent.vue';
 import CardHeader from '@/components/ui/card/CardHeader.vue';
 import CardTitle from '@/components/ui/card/CardTitle.vue';
 import BarChart from '@/components/ui/chart-bar/BarChart.vue';
+import Progress from '@/components/ui/progress/Progress.vue';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { customFormatDate } from '@/lib/date';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link } from '@inertiajs/vue3';
-import { CalendarDays, List, ListChecks, ListIcon, ListTodo, NotebookText } from 'lucide-vue-next';
-import { onMounted } from 'vue';
+import { Head, Link, router } from '@inertiajs/vue3';
+import { AlertCircle, CalendarDays, List, ListChecks, ListIcon, ListTodo, Loader2, NotebookText } from 'lucide-vue-next';
+import { onMounted, onUnmounted, ref } from 'vue';
 
 onMounted(() => {
     console.log('ADD OVERFLOW 1');
@@ -26,14 +31,85 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 defineProps<{ totalProject: any; totalTask: any; totalDraftTask: any; totalDoneTask: any; chartData: any; dueDates: any }>();
+
+const progress = ref(0);
+let intervalId: number | null = null;
+
+const syncData = () => {
+    router.post(route('dashboard.sync'));
+    if (!intervalId) {
+        intervalId = window.setInterval(checkStatus, 1000);
+    }
+};
+
+const checkStatus = () => {
+    fetch('/dashboard/sync-status')
+        .then((res) => res.json())
+        .then((data) => {
+            progress.value = data.progress || 0;
+            if (data.status === 'done') {
+                if (intervalId) {
+                    clearInterval(intervalId);
+                    intervalId = null;
+                }
+                setTimeout(() => (progress.value = 0), 1000);
+            }
+        });
+};
+
+onMounted(() => {
+    // intervalId = setInterval(checkStatus, 1000);
+    // console.log('CHECK STATUS ON MOUNT');
+    fetch('/dashboard/sync-status')
+        .then((res) => res.json())
+        .then((data) => {
+            if (data.status === 'running') {
+                progress.value = data.progress || 0;
+                intervalId = window.setInterval(checkStatus, 1000);
+            }
+        });
+});
+
+onUnmounted(() => {
+    if (intervalId) clearInterval(intervalId);
+});
 </script>
 
 <template>
     <Head title="Dashboard" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <ScrollArea class="h-[calc(100vh-70px)] rounded-md border-0">
+        <ScrollArea class="h-[calc(100vh-80px)] rounded-md border-0">
             <div class="flex flex-1 flex-col gap-4 rounded-xl p-2 md:p-4">
+                <Alert variant="default" class="flex w-full flex-col items-start justify-between text-primary lg:flex-row lg:items-center">
+                    <div class="flex w-full flex-col items-start gap-2 lg:flex-row lg:items-center">
+                        <AlertCircle class="mt-0.5 h-4 w-4 shrink-0" />
+                        <div class="w-full">
+                            <AlertTitle>Info</AlertTitle>
+                            <AlertDescription class="w-full" v-if="progress === 0">
+                                <span> Click here to temporarily sync data to the server while the auto-sync feature is being developed. </span>
+                            </AlertDescription>
+                            <Progress v-else v-model="progress" class="w-full" />
+                        </div>
+                    </div>
+
+                    <Button
+                        v-if="progress === 0"
+                        @click="syncData"
+                        class="ms-0 mt-2 rounded px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50 lg:ms-4 lg:mt-0"
+                    >
+                        <span>Sync</span>
+                    </Button>
+
+                    <Button
+                        v-else
+                        @click="syncData"
+                        class="ms-0 mt-2 rounded px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50 lg:ms-4 lg:mt-0"
+                    >
+                        <Loader2 class="animate-spin" />
+                    </Button>
+                </Alert>
+
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     <div
                         class="relative aspect-video h-40 w-full overflow-hidden rounded-xl border border-sidebar-border/70 md:h-full dark:border-sidebar-border"
