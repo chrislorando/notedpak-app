@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('task_files', function (Blueprint $table) {
             $table->uuid('id')->primary();
+            $table->foreignUuid('owner_id')->constrained('users')->onDelete('cascade');
             $table->foreignUuid('task_id')->constrained()->onDelete('cascade');
             $table->string('name')->nullable();
             $table->string('size')->nullable();
