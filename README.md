@@ -22,6 +22,10 @@ This project serves both as a learning medium to deepen my understanding of mode
 
 ---
 
+## Sync Concept
+
+<img width="381" height="447" alt="Image" src="https://github.com/user-attachments/assets/a4069ae4-8930-45d3-8c10-46f0e64da7c6" />
+
 ## Tech Stack
 
 - **Laravel** – Modern PHP framework for backend development, RESTful APIs, and business logic
