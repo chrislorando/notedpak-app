@@ -32,7 +32,7 @@ const props = defineProps<{
 const isDialogOpen = ref(false);
 
 const form = useForm({
-    uuid: '',
+    id: '',
     name: 'Untitled list',
     description: '',
     color: '#ffffff',
@@ -40,7 +40,7 @@ const form = useForm({
 
 watch(isDialogOpen, (open) => {
     if (open && props.data) {
-        form.uuid = props.data.uuid ?? '';
+        form.id = props.data.id ?? '';
         form.name = props.data.name ?? '';
         form.description = props.data.description ?? '';
         form.color = props.data.color ?? '#ffffff';
@@ -78,7 +78,7 @@ const createList = (e: Event) => {
 const editList = (e: Event) => {
     e.preventDefault();
 
-    form.put(route('projects.update', form.uuid), {
+    form.put(route('projects.update', form.id), {
         preserveScroll: true,
         preserveState: true,
         onSuccess: function () {
