@@ -4,7 +4,7 @@
   <tr>
     <td>
       <strong>Dashboard</strong><br>
-      <img src="https://github.com/user-attachments/assets/0f2a6e2c-4263-480c-a2cf-e1244c0020ac" width="100%">
+      <img src="https://github.com/user-attachments/assets/2cf5226a-82c7-42d1-b025-4a887b7b4f88" width="100%">
     </td>
     <td>
       <strong>View tasks</strong><br>
@@ -24,12 +24,14 @@ This project serves both as a learning medium to deepen my understanding of mode
 
 ## Tech Stack
 
-- Laravel - Modern PHP framework for backend development
-- Inertia.js - Bridging Laravel with modern frontend
-- Vue.js - Progressive JavaScript framework for UI
-- Tailwind CSS - Utility-first CSS framework
-- NativePHP - Cross-platform mobile development from web codebase
-- Full-stack Architecture - Seamless web-to-mobile development workflow
+- **Laravel** – Modern PHP framework for backend development, RESTful APIs, and business logic
+- **Inertia.js** – Bridges Laravel backend with Vue.js frontend for single-page app experience
+- **Vue.js** – Progressive JavaScript framework for building interactive UIs
+- **Tailwind CSS** – Utility-first CSS framework for rapid and responsive UI design
+- **NativePHP** – Enables cross-platform mobile app development from a web codebase
+- **Full-stack Architecture** – Seamless workflow from web to mobile, unified codebase
+- **SQLite** – Lightweight, file-based relational database for local development and mobile
+- **Supabase** – Open-source backend-as-a-service for authentication, real-time data, and cloud storage
 
 ---
 
@@ -40,7 +42,7 @@ This project serves both as a learning medium to deepen my understanding of mode
 🎯 Discipline-Focused: UI/UX designed to promote accountability and task completion  
 🌐 Responsive Design: Works perfectly on desktop, tablet, and mobile  
 📊 Progress Tracking: Monitor your productivity and task completion rates  
-🔄 Real-time Sync: Keep your tasks synchronized across all devices  
+🔄 Data Sync: Keep your tasks synchronized across all devices  
 📦 Drag & Drop: Reorder lists or projects, and tasks with intuitive drag-and-drop interactions
 
 ---
@@ -60,14 +62,28 @@ This project serves both as a learning medium to deepen my understanding of mode
 ```bash
 touch database/database.sqlite
 
-Update .env with:
+# Update .env with:
+# If using local SQLite (development / mobile local DB), use the example below:
 DB_CONNECTION=sqlite
 DB_DATABASE=/absolute/path/to/your/project/database/database.sqlite
 
-# For NativePHP
-NATIVEPHP_APP_ID=xxx.xxxx.xxx
-NATIVEPHP_APP_VERSION="DEBUG"
-NATIVEPHP_APP_VERSION_CODE="1"
+# NativePHP (Mobile App)
+# Use reverse-domain format for APP_ID, e.g., com.example.notedpak
+NATIVEPHP_APP_ID=com.example.notedpak
+NATIVEPHP_APP_VERSION=DEBUG
+NATIVEPHP_APP_VERSION_CODE=1
+
+# Supabase (Mobile / Public API client)
+# SUPABASE_ANON_KEY = public key for clients (anon). For testing use
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-anon-key
+
+# Supabase / PostgreSQL (Web / Data Center / Server)
+# For Postgres connection use DB_CONNECTION=pgsql and DB_URL as a connection string:
+DB_CONNECTION=pgsql
+DB_URL=postgresql://DB_USER:DB_PASSWORD@DB_HOST:DB_PORT/DB_NAME
+
+# Note: Never commit .env files containing keys/secrets to a public repository.
 
 ```
 
