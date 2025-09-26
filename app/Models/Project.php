@@ -4,17 +4,19 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Cache;
 use Str;
 
 class Project extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $keyType = 'string';
     public $incrementing = false;
 
     public $fillable = [
+        'id',
         'name',
         'description',
         'user_id',
@@ -25,7 +27,9 @@ class Project extends Model
     protected static function booted()
     {
         static::creating(function ($model) {
-            $model->id = Str::uuid();
+            if (! $model->id) {
+                $model->id = Str::uuid();
+            }
             $model->user_id = auth()->user()->id ?? User::first()->id;
             // $model->user_id = 1;
         });

@@ -137,7 +137,7 @@ class ProjectController extends Controller
         $model->color = $request->color;
         $model->save();
 
-        return redirect()->route('projects.show', $model->id)->with('success', 'Project updated successfully.');
+        return redirect()->route('tasks.show', $model->id)->with('success', 'Project updated successfully.');
     }
 
     /**
@@ -146,10 +146,11 @@ class ProjectController extends Controller
     public function destroy(string $id)
     {
         $model = auth()->user()->projects()->where('id', $id)->first();
+        $tasks = $model?->tasks();
 
         $deletedCreatedAt = $model?->created_at;
 
-        if($model->delete()){
+        if($model->delete() && $tasks->delete()) {
             $latest = auth()->user()->projects()
                 ->where('created_at', '<=', $deletedCreatedAt)
                 ->latest()
