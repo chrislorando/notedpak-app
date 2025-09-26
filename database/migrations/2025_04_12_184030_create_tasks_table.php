@@ -23,7 +23,10 @@ return new class extends Migration
             $table->boolean('is_important')->default(false);
             $table->dateTime('reminder_at')->nullable();
             $table->datetime('completed_at')->nullable();
+            $table->json('categories')->nullable();
+            $table->unsignedInteger('position')->nullable(); 
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

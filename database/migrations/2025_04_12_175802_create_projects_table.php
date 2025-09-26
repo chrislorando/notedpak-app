@@ -16,8 +16,10 @@ return new class extends Migration
             $table->string('name');
             $table->string('description')->nullable();
             $table->string('color')->nullable();
+            $table->unsignedInteger('position')->nullable();
             $table->foreignUuid('user_id')->constrained()->onDelete('cascade');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
