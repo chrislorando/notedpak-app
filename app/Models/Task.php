@@ -2,21 +2,23 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Str;
 
 class Task extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $keyType = 'string';
     public $incrementing = false;
 
     public $fillable = [
-        'uuid',
+        'id',
         'name',
         'description',
         'note',
@@ -31,17 +33,40 @@ class Task extends Model
         'position'
     ];
 
+    protected $appends = [
+        'created_at_formatted',
+        'updated_at_formatted',
+        'completed_at_formatted',
+    ];
+
     protected $casts = [
-        'created_at' => 'datetime:d/m/Y H:i:s',
-        'updated_at' => 'datetime:d/m/Y H:i:s',
-        'completed_at' => 'datetime:d/m/Y H:i:s',
+        // 'created_at' => 'datetime:d/m/Y H:i:s',
+        // 'updated_at' => 'datetime:d/m/Y H:i:s',
+        // 'completed_at' => 'datetime:d/m/Y H:i:s',
         'categories' => 'array',
     ];
+
+    protected function createdAtFormatted(): Attribute
+    {
+        return Attribute::get(fn () => $this->created_at?->format('d/m/Y H:i:s'));
+    }
+
+    protected function updatedAtFormatted(): Attribute
+    {
+        return Attribute::get(fn () => $this->updated_at?->format('d/m/Y H:i:s'));
+    }
+
+    protected function completedAtFormatted(): Attribute
+    {
+        return Attribute::get(fn () => $this->completed_at?->format('d/m/Y H:i:s'));
+    }
 
     protected static function booted()
     {
         static::creating(function ($model) {
-            $model->id = Str::uuid();
+            if (! $model->id) {
+                $model->id = Str::uuid();
+            }
             $model->owner_id = auth()->user()->id ?? User::first()->id;
         });
 

@@ -228,6 +228,7 @@ class TaskController extends Controller
                 }
                 $file->delete();
             }
+            $model?->attachments()->delete();
             $model->delete();
         }  
     }
