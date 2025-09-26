@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -48,17 +49,18 @@ class Task extends Model
 
     protected function createdAtFormatted(): Attribute
     {
-        return Attribute::get(fn () => $this->created_at?->format('d/m/Y H:i:s'));
+    return Attribute::get(fn () => $this->created_at ? $this->created_at->format('d/m/Y H:i:s') : null);
     }
 
     protected function updatedAtFormatted(): Attribute
     {
-        return Attribute::get(fn () => $this->updated_at?->format('d/m/Y H:i:s'));
+    return Attribute::get(fn () => $this->updated_at ? $this->updated_at->format('d/m/Y H:i:s') : null);
     }
 
     protected function completedAtFormatted(): Attribute
     {
-        return Attribute::get(fn () => $this->completed_at?->format('d/m/Y H:i:s'));
+        return Attribute::get(fn () => $this->completed_at ? Carbon::parse($this->completed_at)->format('d/m/Y H:i:s') : null);
+
     }
 
     protected static function booted()
