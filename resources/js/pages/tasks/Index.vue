@@ -291,10 +291,12 @@ function setActiveTask(id: string) {
     form.description = task.description || '';
     form.note = task.note || '';
     form.categories = task.categories ? JSON.parse(task.categories).map((cat: any) => cat.value ?? cat) : [];
-    if (task.due_date) {
+    if (task.due_date != null) {
+        console.log('Active Due Date', task.due_date);
         selectedDueDate.value = stringToDateValue(task.due_date);
+    } else {
+        selectedDueDate.value = undefined;
     }
-    // console.log('attachments', task.attachments);
 }
 
 function showSheet(id: string) {
@@ -729,7 +731,8 @@ const onReorder = () => {
                                         <!-- <p class="truncate text-sm font-medium text-gray-900 dark:text-white">{{ file.name }}</p> -->
                                         <a
                                             :href="`/tasks/download-file?file=${file.file_url}`"
-                                            class="truncate text-sm font-medium text-gray-900 dark:text-white"
+                                            class="block max-w-xs truncate text-sm font-medium text-gray-900 dark:text-white"
+                                            :title="file.name"
                                         >
                                             {{ file.name }}
                                         </a>
@@ -842,8 +845,8 @@ const onReorder = () => {
                 </SheetClose>
 
                 <div class="flex-1 text-center">
-                    <small v-if="activeTask.completed_at"> Completed on {{ activeTask.completed_at }} </small>
-                    <small v-else> Created on {{ activeTask.created_at }} </small>
+                    <small v-if="activeTask.completed_at"> Completed on {{ activeTask.completed_at_formatted }} </small>
+                    <small v-else> Created on {{ activeTask.created_at_formatted }} </small>
                 </div>
 
                 <AlertDialog>

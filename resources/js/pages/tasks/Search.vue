@@ -222,8 +222,11 @@ function setActiveTask(id: string) {
     form.description = task.description || '';
     form.note = task.note || '';
     form.categories = task.categories ? JSON.parse(task.categories).map((cat: any) => cat.value ?? cat) : [];
-    if (task.due_date) {
+    if (task.due_date != null) {
+        console.log('Active Due Date', task.due_date);
         selectedDueDate.value = stringToDateValue(task.due_date);
+    } else {
+        selectedDueDate.value = undefined;
     }
 }
 
@@ -475,7 +478,13 @@ const moveTask = (taskId: string) => {
                                         </div>
                                     </div>
                                     <div class="min-w-0 flex-1">
-                                        <p class="truncate text-sm font-medium text-gray-900 dark:text-white">{{ file.name }}</p>
+                                        <a
+                                            :href="`/tasks/download-file?file=${file.file_url}`"
+                                            class="block max-w-xs truncate text-sm font-medium text-gray-900 dark:text-white"
+                                            :title="file.name"
+                                        >
+                                            {{ file.name }}
+                                        </a>
                                         <p class="truncate text-sm text-gray-500 dark:text-gray-400">{{ file.size }}KB</p>
                                     </div>
                                     <div class="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
@@ -585,8 +594,8 @@ const moveTask = (taskId: string) => {
                 </SheetClose>
 
                 <div class="flex-1 text-center">
-                    <small v-if="activeTask.completed_at"> Completed on {{ activeTask.completed_at }} </small>
-                    <small v-else> Created on {{ activeTask.created_at }} </small>
+                    <small v-if="activeTask.completed_at"> Completed on {{ activeTask.completed_at_formatted }} </small>
+                    <small v-else> Created on {{ activeTask.created_at_formatted }} </small>
                 </div>
 
                 <AlertDialog>
