@@ -11,6 +11,23 @@
       <img src="https://github.com/user-attachments/assets/4f87c200-977e-45ab-ac56-06dba7443314" width="100%">
     </td>
   </tr>
+</table>
+
+<table>
+  <tr>
+    <td>
+      <strong>Dashboard</strong><br>
+      <img src="https://github.com/user-attachments/assets/3113abf3-855b-4ec8-9d59-6ee5666d7793" width="100%">
+    </td>
+    <td>
+      <strong>View List/Project</strong><br>
+      <img src="https://github.com/user-attachments/assets/138ad857-eb2b-47a5-961c-7d4459723f59" width="100%">
+    </td>
+    <td>
+      <strong>View tasks</strong><br>
+      <img src="https://github.com/user-attachments/assets/03cb403b-3a02-4de5-baa2-037aad11da7a" width="100%">
+    </td>
+  </tr>
  
 </table>
 
