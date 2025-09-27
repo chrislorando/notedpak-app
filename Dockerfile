@@ -1,4 +1,4 @@
-FROM php:8.2-fpm
+FROM php:8.3-fpm
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -33,8 +33,8 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 WORKDIR /var/www
 
 # Copy composer files first (for Docker layer caching)
-COPY composer.server.json ./
-RUN mv composer.server.json composer.json
+# COPY composer.server.json ./
+# RUN mv composer.server.json composer.json
 
 # Copy npm files first
 COPY package*.json ./
@@ -46,8 +46,8 @@ RUN npm install
 COPY . .
 
 # Install PHP dependencies
-RUN composer update --no-scripts --no-install
-# RUN composer install --optimize-autoloader --no-interaction
+# RUN composer update --no-scripts --no-install
+RUN composer install --optimize-autoloader --no-interaction
 
 # Build frontend assets
 RUN npm run build
