@@ -34,6 +34,7 @@ WORKDIR /var/www
 
 # Copy composer files first (for Docker layer caching)
 COPY composer.json composer.lock ./
+RUN mv composer.server.json composer.json && mv composer.server.lock composer.lock
 
 # Copy npm files first
 COPY package*.json ./
