@@ -46,7 +46,8 @@ RUN npm install
 COPY . .
 
 # Install PHP dependencies
-RUN composer install --optimize-autoloader --no-interaction
+RUN composer update --no-scripts --no-install
+# RUN composer install --optimize-autoloader --no-interaction
 
 # Build frontend assets
 RUN npm run build
