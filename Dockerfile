@@ -33,6 +33,7 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 WORKDIR /var/www
 
 # Copy composer files first (for Docker layer caching)
+RUN rm composer.json composer.lock
 COPY composer.server.json composer.server.lock ./
 RUN mv composer.server.json composer.json && mv composer.server.lock composer.lock
 
