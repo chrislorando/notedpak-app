@@ -16,6 +16,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Validation\ValidationException;
 use Log;
+use Native\Mobile\Facades\System;
 
 class RegisteredUserController extends Controller
 {
@@ -48,42 +49,46 @@ class RegisteredUserController extends Controller
             'email_verified_at' => now(),
         ];
 
-        $check = $supabase->getUserByEmail($request->email);
+        if(config('app.env')=='local'){
+            $check = $supabase->getUserByEmail($request->email);
 
-        if (!empty($check['success']) && !empty($check['data'])) {
-            throw ValidationException::withMessages([
-                'email' => __('validation.unique', ['attribute' => 'email']),
-            ]);
-        } else {
-            DB::beginTransaction();
-
-            try {
-                $user = User::create($payload);
-                event(new Registered($user));
-
-                $payload['id'] = $user->id;
-                $payload['created_at'] = $user->created_at;
-                $payload['updated_at'] = $user->updated_at; 
-
-                $result = $supabase->addUser($payload);
-
-                if (! $result['success']) {
-                    throw new \Exception("Supabase error: " . json_encode($result['error']));
-                }
-
-                DB::commit();
-                Auth::login($user);
-            } catch (\Throwable $e) {
-                DB::rollBack();
-                Log::error('User sync error: ' . $e->getMessage());
-
-                return back()->withErrors([
-                    'email' => __('auth.failed'),
+            if (!empty($check['success']) && !empty($check['data'])) {
+                throw ValidationException::withMessages([
+                    'email' => __('validation.unique', ['attribute' => 'email']),
                 ]);
-            }
-        }
+            } else {
+                DB::beginTransaction();
 
-  
+                try {
+                    $user = User::create($payload);
+                    event(new Registered($user));
+
+                    $payload['id'] = $user->id;
+                    $payload['created_at'] = $user->created_at;
+                    $payload['updated_at'] = $user->updated_at; 
+
+                    $result = $supabase->addUser($payload);
+
+                    if (! $result['success']) {
+                        throw new \Exception("Supabase error: " . json_encode($result['error']));
+                    }
+
+                    DB::commit();
+                    Auth::login($user);
+                } catch (\Throwable $e) {
+                    DB::rollBack();
+                    Log::error('User sync error: ' . $e->getMessage());
+
+                    return back()->withErrors([
+                        'email' => __('auth.failed'),
+                    ]);
+                }
+            }
+        }else{
+            $user = User::create($payload);
+
+            event(new Registered($user));
+        }
 
         return to_route('dashboard');
     }

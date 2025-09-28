@@ -33,42 +33,45 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request, SupabaseService $supabase): RedirectResponse
     {
-        $credentials = $request->only('email', 'password');
+        if(config('app.env')=='local'){
+            $credentials = $request->only('email', 'password');
 
-        $check = $supabase->getUserByEmail($credentials['email']);
+            $check = $supabase->getUserByEmail($credentials['email']);
 
-        if ($check['success'] && !empty($check['data'])) {
-            $remote = $check['data'][0]; 
-            $local = User::where('email', $credentials['email'])->first();
+            if ($check['success'] && !empty($check['data'])) {
+                $remote = $check['data'][0]; 
+                $local = User::where('email', $credentials['email'])->first();
 
-            if (! Hash::check($credentials['password'], $remote['password'])) {
-                throw ValidationException::withMessages([
-                    'email' => __('auth.failed'),
-                ]);
-            }
-
-            if ($local) {
-                if ($remote['updated_at'] > $local->updated_at) {
-                    $local->update([
-                        'name' => $remote['name'],
-                        'password' => $remote['password'], 
+                if (! Hash::check($credentials['password'], $remote['password'])) {
+                    throw ValidationException::withMessages([
+                        'email' => __('auth.failed'),
                     ]);
-                } else {
-                    $supabase->updateUser($local->id, $local->toArray());
                 }
-            } else {
-                
-                $local = User::create([
-                    'id'       => $remote['id'],
-                    'name'     => $remote['name'],
-                    'email'    => $remote['email'],
-                    'password' => $remote['password'],
-                    'email_verified_at' => $remote['email_verified_at'],
-                    'created_at' => $remote['created_at'],
-                    'updated_at' => $remote['updated_at'],
-                ]);
+
+                if ($local) {
+                    if ($remote['updated_at'] > $local->updated_at) {
+                        $local->update([
+                            'name' => $remote['name'],
+                            'password' => $remote['password'], 
+                        ]);
+                    } else {
+                        $supabase->updateUser($local->id, $local->toArray());
+                    }
+                } else {
+                    
+                    $local = User::create([
+                        'id'       => $remote['id'],
+                        'name'     => $remote['name'],
+                        'email'    => $remote['email'],
+                        'password' => $remote['password'],
+                        'email_verified_at' => $remote['email_verified_at'],
+                        'created_at' => $remote['created_at'],
+                        'updated_at' => $remote['updated_at'],
+                    ]);
+                }
             }
         }
+        
 
         $request->authenticate();
         $request->session()->regenerate();
