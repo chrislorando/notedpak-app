@@ -23,7 +23,7 @@ RUN composer install --no-dev --prefer-dist --optimize-autoloader --no-interacti
 
 # Copy source supaya autoload bisa dioptimasi
 COPY . .
-RUN composer dump-autoload --optimize
+RUN composer dump-autoload --optimize --no-scripts
 
 
 # Stage 3: final php-fpm
