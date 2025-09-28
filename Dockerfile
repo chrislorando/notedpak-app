@@ -35,10 +35,12 @@ WORKDIR /var/www
 # Copy composer files first (for Docker layer caching)
 COPY composer.server.json composer.json
 COPY composer.server.lock composer.lock
-RUN composer install --optimize-autoloader --no-interaction --no-scripts
 
 # Copy npm files first
 COPY package*.json ./
+
+# Run npm install first to cache dependencies
+RUN composer install --optimize-autoloader --no-interaction --no-scripts
 RUN npm install
 
 # Install Node dependencies
