@@ -29,7 +29,7 @@ class SupabaseService
         $response = Http::withHeaders($this->headers())
             ->get("{$this->url}/rest/v1/users", [
                 'id' => "eq.$id",
-                'deleted_at' => "is.null",
+                // 'deleted_at' => "is.null",
             ]);
 
         if ($response->successful()) {
@@ -44,7 +44,7 @@ class SupabaseService
         $response = Http::withHeaders($this->headers())
             ->get("{$this->url}/rest/v1/users", [
                 'email' => "eq.$email",
-                'deleted_at' => "is.null",
+                // 'deleted_at' => "is.null",
             ]);
 
         if ($response->successful()) {
@@ -59,7 +59,7 @@ class SupabaseService
         $response = Http::withHeaders($this->headers())
             ->get("{$this->url}/rest/v1/users", [
                 'select' => '*',
-                'deleted_at' => "is.null",
+                // 'deleted_at' => "is.null",
             ]);
 
         return $response->json();
@@ -109,7 +109,7 @@ class SupabaseService
         $response = Http::withHeaders($this->headers())
             ->get("{$this->url}/rest/v1/projects", [
                 'id' => "eq.$id",
-                'deleted_at' => "is.null",
+                // 'deleted_at' => "is.null",
             ]);
 
         if ($response->successful()) {
@@ -126,7 +126,7 @@ class SupabaseService
             ->get($this->url . '/rest/v1/projects', [
                 'user_id' => 'eq.' . $userId, 
                 'select'  => '*',
-                'deleted_at' => "is.null",
+                // 'deleted_at' => "is.null",
             ]);
 
             if ($response->successful()) {
@@ -194,7 +194,7 @@ class SupabaseService
         $response = Http::withHeaders($this->headers())
             ->get("{$this->url}/rest/v1/tasks", [
                 'id' => "eq.$id",
-                'deleted_at' => "is.null",
+                // 'deleted_at' => "is.null",
             ]);
 
         if ($response->successful()) {
@@ -211,7 +211,7 @@ class SupabaseService
             ->get($this->url . '/rest/v1/tasks', [
                 'owner_id' => 'eq.' . $userId, 
                 'select'  => '*',
-                'deleted_at' => "is.null",
+                // 'deleted_at' => "is.null",
             ]);
 
             if ($response->successful()) {
