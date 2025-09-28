@@ -33,11 +33,7 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 WORKDIR /var/www
 
 # Copy composer files first (for Docker layer caching)
-COPY composer.server.json composer.json
-COPY composer.server.lock composer.lock
-
-# Install PHP dependencies
-RUN composer install --optimize-autoloader --no-interaction --no-scripts
+COPY composer.json composer.lock ./
 
 # Copy npm files first
 COPY package*.json ./
@@ -47,6 +43,9 @@ RUN npm install
 
 # Copy application files
 COPY . .
+
+# Install PHP dependencies
+RUN composer install --optimize-autoloader --no-interaction
 
 # Build frontend assets
 RUN npm run build
