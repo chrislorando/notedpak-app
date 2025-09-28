@@ -4,7 +4,7 @@ WORKDIR /app
 
 # Copy package.json + lock
 COPY package*.json ./
-RUN npm ci --omit=dev
+RUN npm install
 
 # Copy seluruh project (dibutuhkan untuk build asset frontend)
 COPY . .
