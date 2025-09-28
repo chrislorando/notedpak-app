@@ -36,7 +36,7 @@ WORKDIR /var/www
 COPY composer.server.json composer.server.lock ./
 
 # Install PHP dependencies
-RUN composer install --optimize-autoloader --no-interaction --no-scripts
+RUN composer install --optimize-autoloader --no-interaction
 
 # Copy npm files first
 COPY package*.json ./
