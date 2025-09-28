@@ -21,7 +21,10 @@ class Project extends Model
         'description',
         'user_id',
         'color',
-        'position'
+        'position',
+        'deleted_at',
+        'created_at',
+        'updated_at',
     ];
 
     protected static function booted()

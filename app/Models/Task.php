@@ -31,7 +31,10 @@ class Task extends Model
         'is_important',
         'completed_at',
         'categories',
-        'position'
+        'position',
+        'deleted_at',
+        'created_at',
+        'updated_at',
     ];
 
     protected $appends = [

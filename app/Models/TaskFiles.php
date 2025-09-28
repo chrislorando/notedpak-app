@@ -20,6 +20,9 @@ class TaskFiles extends Model
         'name',
         'size',
         'url',
+        'deleted_at',
+        'created_at',
+        'updated_at',
     ];
 
     protected $appends = ['extension','file_url'];
