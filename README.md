@@ -4,7 +4,7 @@
   <tr>
     <td>
       <strong>Dashboard</strong><br>
-      <img src="https://github.com/user-attachments/assets/2cf5226a-82c7-42d1-b025-4a887b7b4f88" width="100%">
+      <img src="https://github.com/user-attachments/assets/eb73e52f-5741-410f-975b-845009f1a6b7" width="100%">
     </td>
     <td>
       <strong>View tasks</strong><br>
@@ -15,20 +15,19 @@
 
 <table>
   <tr>
-    <td>
+    <td style="vertical-align:top;height:300px;">
       <strong>Dashboard</strong><br>
-      <img src="https://github.com/user-attachments/assets/3113abf3-855b-4ec8-9d59-6ee5666d7793" width="100%">
+      <img src="https://github.com/user-attachments/assets/96c465f3-30f1-4d5c-92d0-b72adf6e68f5" width="100%">
     </td>
-    <td>
+    <td style="vertical-align:top;height:300px;">
       <strong>View List/Project</strong><br>
-      <img src="https://github.com/user-attachments/assets/138ad857-eb2b-47a5-961c-7d4459723f59" width="100%">
+      <img src="https://github.com/user-attachments/assets/a72af851-c671-4573-947c-c3f31442bac2" width="100%">
     </td>
-    <td>
+    <td style="vertical-align:top;height:300px;">
       <strong>View tasks</strong><br>
-      <img src="https://github.com/user-attachments/assets/03cb403b-3a02-4de5-baa2-037aad11da7a" width="100%">
+      <img src="https://github.com/user-attachments/assets/87e24cb9-fce7-4ac2-bd9e-adc5f48a48f1" width="100%">
     </td>
   </tr>
- 
 </table>
 
 NotedPak is a modern to-do list application inspired by the spirit of discipline and accountability found in Indonesian culture. The name reflects the respectful phrase "Noted, Pak!" which means "Understood, Sir!" — a way to acknowledge and accept tasks with commitment and without hesitation.
