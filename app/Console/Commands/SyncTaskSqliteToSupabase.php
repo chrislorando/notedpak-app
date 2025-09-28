@@ -140,7 +140,7 @@ class SyncTaskSqliteToSupabase extends Command
                     $this->info("⬆️ Task {$local->description} inserted from local to Supabase.");
                 } else {
                     Log::error('Task insert to Supabase error: ' . json_encode($insert['error']));
-                    $this->error("❌ Failed insert {$local->description} to Supabase.");
+                    $this->error("❌ Failed insert task {$local->id} to Supabase.");
                 }
             }
         }

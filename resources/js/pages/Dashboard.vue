@@ -35,6 +35,11 @@ defineProps<{ totalProject: any; totalTask: any; totalDraftTask: any; totalDoneT
 const progress = ref(0);
 let intervalId: number | null = null;
 
+const isLocal = (() => {
+    const e = import.meta.env as any;
+    return e?.VITE_APP_ENV === 'local' || e?.MODE === 'local' || e?.NODE_ENV === 'local' || e?.NODE_ENV === 'development';
+})();
+
 const syncData = () => {
     router.post(route('dashboard.sync'));
     if (!intervalId) {
@@ -81,7 +86,11 @@ onUnmounted(() => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <ScrollArea class="h-[calc(100vh-80px)] rounded-md border-0">
             <div class="flex flex-1 flex-col gap-4 rounded-xl p-2 md:p-4">
-                <Alert variant="default" class="flex w-full flex-col items-start justify-between text-primary lg:flex-row lg:items-center">
+                <Alert
+                    v-if="isLocal"
+                    variant="default"
+                    class="flex w-full flex-col items-start justify-between text-primary lg:flex-row lg:items-center"
+                >
                     <div class="flex w-full flex-col items-start gap-2 lg:flex-row lg:items-center">
                         <AlertCircle class="mt-0.5 h-4 w-4 shrink-0" />
                         <div class="w-full">

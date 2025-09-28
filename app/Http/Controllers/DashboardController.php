@@ -40,7 +40,7 @@ class DashboardController extends Controller
         ])
         ->where('user_id', auth()->user()->id)
         ->whereRaw('(select count(*) from tasks where projects.id = tasks.project_id and is_completed = false) > 0')
-        ->orderBy('created_at', 'asc')
+        ->orderBy('total', 'desc')
         ->limit(5)
         ->get();
 

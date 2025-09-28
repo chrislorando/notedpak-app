@@ -209,7 +209,7 @@ class SupabaseService
         try {
             $response = Http::withHeaders($this->headers())
             ->get($this->url . '/rest/v1/tasks', [
-                'user_id' => 'eq.' . $userId, 
+                'owner_id' => 'eq.' . $userId, 
                 'select'  => '*',
                 'deleted_at' => "is.null",
             ]);
