@@ -37,7 +37,7 @@ COPY composer.server.json composer.json
 COPY composer.server.lock composer.lock
 
 # Install PHP dependencies
-RUN composer install --optimize-autoloader --no-interaction
+RUN composer install --optimize-autoloader --no-interaction --no-scripts
 
 # Copy npm files first
 COPY package*.json ./
