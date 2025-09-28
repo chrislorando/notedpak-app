@@ -19,7 +19,7 @@ pipeline {
                     docker images -q ${COMPOSE_PROJECT_NAME}* | xargs -r docker rmi -f
                     
                     # Clean network
-                    docker network prune -f
+                    docker network rm notedpak-network || true
                 '''
             }
         }
