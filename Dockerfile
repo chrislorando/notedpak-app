@@ -25,7 +25,7 @@ RUN curl -sL https://deb.nodesource.com/setup_20.x | bash - \
     && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
-RUN docker-php-ext-install -j$(nproc) pdo pdo_pgsql pdo_sqlite zip pcntl bcmath gmp gd 
+RUN docker-php-ext-install -j$(nproc) pdo pdo_pgsql zip pcntl bcmath gmp gd 
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
