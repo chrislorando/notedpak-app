@@ -199,10 +199,12 @@ return [
 
         'biometric' => false,
 
-        'camera' => false,
+        'camera' => true,
 
         'nfc' => false,
 
         'push_notifications' => false,
+
+        'storage_read' => true,
     ]
 ];
