@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\SyncController;
 use App\Http\Controllers\TaskController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -65,7 +66,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('tasks/upload-file/{id}', [TaskController::class, 'uploadFile'])->name('tasks.upload-file');
     Route::delete('tasks/delete-file/{id}', [TaskController::class, 'deleteFile'])->name('tasks.delete-file');
     Route::patch( 'tasks/reorder', [TaskController::class, 'reorder'])->name('tasks.reorder');
-   
+
+    Route::get('syncs', [SyncController::class, 'index'])->name('syncs.index');
+    Route::post('syncs/start', [SyncController::class, 'start'])->name('syncs.start');
+    Route::get('syncs/get-status', [SyncController::class, 'getStatus'])->name('syncs.get-status');
 });
 
 require __DIR__.'/settings.php';
