@@ -9,11 +9,11 @@ RUN apt-get update && apt-get install -y \
     libonig-dev \
     libxml2-dev \
     libsqlite3-dev \
-    pdo_pgsql \
     libgmp-dev \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \
+    libpq-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
@@ -25,7 +25,7 @@ RUN curl -sL https://deb.nodesource.com/setup_20.x | bash - \
     && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
-RUN docker-php-ext-install -j$(nproc) pdo pdo_mysql pdo_sqlite zip pcntl bcmath gmp gd
+RUN docker-php-ext-install -j$(nproc) pdo pdo_pgsql pdo_sqlite zip pcntl bcmath gmp gd 
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
