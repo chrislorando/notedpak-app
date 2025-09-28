@@ -19,7 +19,7 @@ WORKDIR /app
 COPY composer.server.json composer.json
 COPY composer.server.lock composer.lock
 
-RUN composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction
+RUN composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction --no-scripts
 
 # Copy source supaya autoload bisa dioptimasi
 COPY . .
