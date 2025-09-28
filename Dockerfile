@@ -48,7 +48,7 @@ COPY . .
 RUN composer install --optimize-autoloader --no-interaction
 
 # Build frontend assets
-RUN NODE_OPTIONS=--max_old_space_size=1024 npm run build
+# RUN NODE_OPTIONS=--max_old_space_size=1024 npm run build
 
 RUN mkdir -p storage/framework/{cache,sessions,testing,views} \
     && mkdir -p database/ \
