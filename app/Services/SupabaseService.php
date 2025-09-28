@@ -11,8 +11,8 @@ class SupabaseService
 
     public function __construct()
     {
-        $this->url     = rtrim(env('SUPABASE_URL'), '/');
-        $this->anonKey = env('SUPABASE_ANON_KEY');
+        $this->url     = rtrim(config('services.supabase.url'), '/');
+        $this->anonKey = config('services.supabase.anon_key');
     }
 
     protected function headers(): array
