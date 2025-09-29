@@ -74,6 +74,8 @@ This project serves both as a learning medium to deepen my understanding of mode
 - Composer
 - Node.js & NPM
 - SQLLITE
+- PostgreSQL
+- NativePHP
 
 ---
 
