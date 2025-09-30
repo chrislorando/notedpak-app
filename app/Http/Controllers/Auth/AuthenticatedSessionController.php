@@ -70,16 +70,21 @@ class AuthenticatedSessionController extends Controller
                     ]);
                 }
             }
+
+            
+            $request->authenticate();
+            $request->session()->regenerate();
+            
+            Inertia::clearHistory();
+            return redirect()->intended(route('dashboard', absolute: false));
+        }else{
+            $request->authenticate();
+            $request->session()->regenerate();
+
+            Inertia::clearHistory();
+            return to_route('syncs.index');
         }
-        
-
-        $request->authenticate();
-        $request->session()->regenerate();
-
-        // return redirect()->intended(route('syncs.index', absolute: false));
-        Inertia::clearHistory();
-        return to_route('syncs.index');
-        // return redirect(route('syncs.index', absolute: false));
+       
     }
 
 
