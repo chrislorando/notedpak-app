@@ -8,6 +8,7 @@ use App\Models\Task;
 use App\Models\TaskFiles;
 use Cache;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Storage;
 use Inertia\Inertia;
 use Str;
@@ -61,16 +62,19 @@ class TaskController extends Controller
         $sortBy = 'description';
         $sortOrder = 'asc';
   
-        if($request->query('q')==null){
-            $tasks = [];
-        }else{
-            $tasks = auth()->user()->tasks()
+        $tasks = auth()->user()->tasks()
             ->with(['project','attachments'])
-            ->whereLike('description',  '%'.$request->query('q').'%')
-            ->orderBy($sortBy, $sortOrder)
-            ->limit(value: 50)
-            ->get();
-        }
+            ->when($request->query('q'), function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('description', 'like', '%'.$search.'%')
+                      ->orWhereHas('project', function ($q2) use ($search) {
+                          $q2->where('name', 'like', '%'.$search.'%');
+                      });
+                });
+            })
+            ->orderBy($sortBy, $sortOrder);
+            // ->limit(value: 50)
+            // ->get();
 
     
         $projects = auth()->user()->projects()
@@ -85,10 +89,10 @@ class TaskController extends Controller
                 'class' => $case->colorClass(),
             ]),
         ]);
-    
 
         return Inertia::render('tasks/Search', [
-            'tasks' => $tasks,
+            // 'tasks' => $tasks,
+            'tasks' => Inertia::scroll(fn () => $tasks->paginate(5))
         ]);
     }
 

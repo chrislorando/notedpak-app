@@ -20,6 +20,18 @@ onMounted(() => {
     console.log('ADD OVERFLOW 1');
     window.scrollTo(0, 0);
     document.body.classList.remove('overflow-hidden');
+
+    // history.pushState(null, '', location.href);
+    // window.addEventListener('popstate', function (event) {
+    //     console.log('PREVENT BACK TO LOGIN');
+    //     router.visit('/dashboard', { replace: true });
+    // });
+
+    router.on('navigate', (event) => {
+        console.log('navigated to', event.detail.page.url);
+        history.pushState(null, '', location.href);
+        router.visit('/dashboard', { replace: true });
+    });
 });
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -29,7 +41,9 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-defineProps<{ totalProject: any; totalTask: any; totalDraftTask: any; totalDoneTask: any; chartData: any; dueDates: any }>();
+const props = defineProps<{ totalProject: any; totalTask: any; totalDraftTask: any; totalDoneTask: any; chartData: any; dueDates: any }>();
+
+const safeChartData = Array.isArray(props.chartData) ? props.chartData.filter((item) => item && typeof item.name !== 'undefined') : [];
 
 const isLocal = (() => {
     const e = import.meta.env as any;
@@ -145,8 +159,9 @@ const syncData = () => {
                             /> -->
 
                             <BarChart
+                                v-if="safeChartData.length"
                                 :type="'grouped'"
-                                :data="chartData"
+                                :data="safeChartData"
                                 index="name"
                                 :categories="['draft', 'complete']"
                                 :y-formatter="

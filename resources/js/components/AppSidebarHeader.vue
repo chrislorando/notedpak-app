@@ -3,6 +3,7 @@ import Breadcrumbs from '@/components/Breadcrumbs.vue';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import type { BreadcrumbItemType } from '@/types';
 import { router, usePage } from '@inertiajs/vue3';
+import { debounce } from 'lodash';
 import { Search, X } from 'lucide-vue-next';
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import Button from './ui/button/Button.vue';
@@ -39,20 +40,23 @@ onBeforeUnmount(() => {
     // window.removeEventListener('resize', handleResize);
 });
 
-watch(search, (val) => {
-    console.log('SEARCH', val);
-    router.get(
-        route('tasks.search'),
-        {
-            q: String(val),
-        },
-        {
-            preserveScroll: true,
-            preserveState: true,
-            replace: true,
-        },
-    );
-});
+watch(
+    search,
+    debounce((val) => {
+        console.log('SEARCH', val);
+        router.get(
+            route('tasks.search'),
+            {
+                q: String(val),
+            },
+            {
+                preserveScroll: true,
+                preserveState: false,
+                replace: true,
+            },
+        );
+    }, 300),
+);
 
 const goToSearch = () => {
     showSearch.value = true;

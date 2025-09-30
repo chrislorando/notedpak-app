@@ -37,7 +37,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { customFormatDate, dateValueToString, stringToDateValue } from '@/lib/date';
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem } from '@/types';
-import { Head, router, useForm, usePage } from '@inertiajs/vue3';
+import { Head, InfiniteScroll, router, useForm, usePage } from '@inertiajs/vue3';
 import {
     CalendarDaysIcon,
     Check,
@@ -106,7 +106,7 @@ watch(
         console.log('SEARCH PROP', search);
         if (search) {
             breadcrumbs.value[0].title = `Searching for "${search}"`;
-            props.tasks.value = props.tasks.value;
+            // props.tasks.value = props.tasks.value;
         } else {
             breadcrumbs.value[0].title = `Searching for ""`;
             props.tasks.value = null;
@@ -122,6 +122,22 @@ watch(openTaskSheet, (val) => {
     }
 });
 
+const searchTasks = async () => {
+    setTimeout(() => {
+        router.get(
+            route('tasks.search'),
+            {
+                q: String(search.value),
+            },
+            {
+                preserveScroll: true,
+                preserveState: false,
+                replace: true,
+            },
+        );
+    }, 1000);
+};
+
 function editTask(id: string) {
     form.due_date = selectedDueDate.value ? dateValueToString(selectedDueDate.value) : null;
     form.categories = JSON.stringify(form.categories);
@@ -129,8 +145,10 @@ function editTask(id: string) {
     form.put(route('tasks.update', id), {
         preserveScroll: true,
         preserveState: true,
+        // replace: true,
         onSuccess: () => {
             showSheet(id);
+            searchTasks();
         },
     });
 }
@@ -144,13 +162,15 @@ function uploadTaskFile(e: any, id: string) {
         onProgress: (progress) => {
             form.progress = progress ?? null;
         },
-        preserveScroll: true,
-        preserveState: true,
+        preserveScroll: false,
+        preserveState: false,
+        replace: true,
         onSuccess: function (result) {
             console.log('UPLOADED', result);
             form.progress = null;
             if (openTaskSheet.value) {
                 setActiveTask(id);
+                searchTasks();
             }
         },
     });
@@ -158,11 +178,13 @@ function uploadTaskFile(e: any, id: string) {
 
 function deleteFile(task_id: string, file_id: string) {
     router.delete(route('tasks.delete-file', file_id), {
-        preserveScroll: true,
-        preserveState: true,
+        preserveScroll: false,
+        preserveState: false,
+        replace: true,
         onSuccess: function (result) {
             if (openTaskSheet.value) {
                 setActiveTask(task_id);
+                searchTasks();
             }
         },
     });
@@ -173,14 +195,16 @@ function completeTask(id: string) {
         route('tasks.complete', id),
         {},
         {
-            preserveScroll: true,
-            preserveState: true,
+            preserveScroll: false,
+            preserveState: false,
+            replace: true,
             onSuccess: function (result) {
                 console.log('COMPLETED', result);
                 const audio = new Audio('/servant-bell-ring-2-211683.mp3');
                 audio.play();
                 if (openTaskSheet.value) {
                     setActiveTask(id);
+                    searchTasks();
                 }
             },
         },
@@ -192,12 +216,14 @@ function bookmarkTask(id: string) {
         route('tasks.bookmark', id),
         {},
         {
-            preserveScroll: true,
-            preserveState: true,
+            preserveScroll: false,
+            preserveState: false,
+            replace: true,
             onSuccess: function (result) {
                 console.log('BOOKMARKED', result);
                 if (openTaskSheet.value) {
                     setActiveTask(id);
+                    searchTasks();
                 }
             },
         },
@@ -211,13 +237,14 @@ function deleteTask(id: string) {
         onSuccess: function (result) {
             console.log('DESTROYED', result);
             openTaskSheet.value = false;
+            searchTasks();
             // activeTask.value = [];
         },
     });
 }
 
 function setActiveTask(id: string) {
-    const task = [...props.tasks].find((t) => t.id === id);
+    const task = [...props.tasks.data].find((t) => t.id === id);
     activeTask.value = task;
     form.description = task.description || '';
     form.note = task.note || '';
@@ -232,6 +259,7 @@ function setActiveTask(id: string) {
 
 function showSheet(id: string) {
     openTaskSheet.value = true;
+    console.log('SHOW SHEET', openTaskSheet.value, id);
     setActiveTask(id);
 }
 
@@ -314,11 +342,11 @@ const moveTask = (taskId: string) => {
                     <p>What are you looking for?</p>
                 </div>
                 <div class="flex w-[calc(100%-20px)] flex-col gap-2">
-                    <ul>
+                    <InfiniteScroll v-if="tasks && tasks.data.length" :key="search" data="tasks" :buffer="500" only-next :auto-scroll="false" as="ul">
                         <li
                             @click.stop="showSheet(item.id)"
                             v-bind:key="item.id"
-                            v-for="item in tasks"
+                            v-for="item in tasks.data"
                             class="mb-2 flex items-center justify-between rounded-sm border p-4 shadow dark:bg-zinc-900"
                         >
                             <div class="flex items-start space-x-3">
@@ -374,7 +402,7 @@ const moveTask = (taskId: string) => {
                                 <Star :size="18" :fill="item.is_important ? item.project.color : ''" />
                             </button>
                         </li>
-                    </ul>
+                    </InfiniteScroll>
                 </div>
             </ScrollArea>
         </div>

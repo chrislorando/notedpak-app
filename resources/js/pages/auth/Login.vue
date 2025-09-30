@@ -6,8 +6,17 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AuthBase from '@/layouts/AuthLayout.vue';
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, router, useForm, usePage } from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';
+import { onBeforeMount } from 'vue';
+
+const page = usePage();
+onBeforeMount(() => {
+    console.log('Mounted Login:', page.props.auth);
+    if (page.props.auth?.user) {
+        router.visit('/dashboard', { replace: true });
+    }
+});
 
 defineProps<{
     status?: string;
