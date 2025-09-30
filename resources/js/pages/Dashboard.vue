@@ -29,8 +29,10 @@ onMounted(() => {
 
     router.on('navigate', (event) => {
         console.log('navigated to', event.detail.page.url);
-        history.pushState(null, '', location.href);
-        router.visit('/dashboard', { replace: true });
+        if (event.detail.page.url == '/login' || event.detail.page.url == '/register') {
+            history.pushState(null, '', location.href);
+            router.visit('/dashboard', { replace: true });
+        }
     });
 });
 

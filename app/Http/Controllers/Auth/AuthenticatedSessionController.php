@@ -71,18 +71,19 @@ class AuthenticatedSessionController extends Controller
                 }
             }
 
-            
-            $request->authenticate();
-            $request->session()->regenerate();
-            
-            Inertia::clearHistory();
-            return redirect()->intended(route('dashboard', absolute: false));
-        }else{
             $request->authenticate();
             $request->session()->regenerate();
 
             Inertia::clearHistory();
             return to_route('syncs.index');
+           
+        }else{
+            $request->authenticate();
+            $request->session()->regenerate();
+            
+            Inertia::clearHistory();
+            return redirect()->intended(route('dashboard', absolute: false));
+
         }
        
     }
