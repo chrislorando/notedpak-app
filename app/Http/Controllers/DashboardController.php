@@ -61,7 +61,6 @@ class DashboardController extends Controller
             ->orderBy('due_date', 'asc')
             ->get();
 
-        
         return Inertia::render('Dashboard', [
             'totalProject' => $totalProject,
             'totalTask' => $totalTask,

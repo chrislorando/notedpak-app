@@ -13,7 +13,7 @@ use Illuminate\Http\Request;
 //     return Inertia::render('Welcome');
 // })->name('home');
 
-Route::get('/', [AuthenticatedSessionController::class, 'create'])->name('home');
+Route::get('/', [AuthenticatedSessionController::class, 'create'])->middleware(['guest'])->name('home');
 
 // Route::get('dashboard', function () {
 //     return Inertia::render('Dashboard');

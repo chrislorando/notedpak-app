@@ -1,12 +1,13 @@
 <script setup>
 import Progress from '@/components/ui/progress/Progress.vue';
-import { router } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import { onMounted, ref } from 'vue';
 
 const progress = ref(0);
 const status = ref('running');
 
-const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+const page = usePage();
+const token = ref(String(page.props.csrfToken ?? ''));
 
 const pollStatus = async () => {
     try {
@@ -15,13 +16,17 @@ const pollStatus = async () => {
         progress.value = data.progress;
         status.value = data.status;
         if (data.status === 'done') {
+            console.log('Sync complete, redirecting...');
             setTimeout(() => {
-                router.visit('/dashboard');
+                router.clearHistory();
+                router.visit('/dashboard', { replace: true });
             }, 1200);
         } else {
+            console.log('Polling again...');
             setTimeout(pollStatus, 1000);
         }
     } catch (e) {
+        console.error('Error fetching sync status:', e);
         setTimeout(pollStatus, 2000);
     }
 };
@@ -30,9 +35,10 @@ onMounted(() => {
     fetch('/syncs/start', {
         method: 'POST',
         headers: {
-            'X-CSRF-TOKEN': token,
+            'X-CSRF-TOKEN': token.value,
             'Content-Type': 'application/json',
         },
+        credentials: 'same-origin',
     });
     pollStatus();
 });

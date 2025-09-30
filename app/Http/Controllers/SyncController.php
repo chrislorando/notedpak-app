@@ -10,6 +10,7 @@ class SyncController extends Controller
 {
     public function index(Request $request)
     {
+        Inertia::clearHistory();
         return Inertia::render('Sync');
     }
 
