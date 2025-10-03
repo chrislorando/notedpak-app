@@ -10,7 +10,7 @@ class SyncController extends Controller
 {
     public function index(Request $request)
     {
-        Inertia::clearHistory();
+        // Inertia::clearHistory();
         return Inertia::render('Sync');
     }
 
@@ -20,11 +20,17 @@ class SyncController extends Controller
         app(\App\Services\SyncProjectService::class)->sync();
         app(\App\Services\SyncTaskService::class)->sync();
 
-        if ($request->header('X-Inertia')) {
-            return back(); 
-        }
+        // if ($request->header('X-Inertia')) {
+        //     return back(); 
+        // }
 
-        return response()->json(['status' => 'started']);
+        return response()->json([
+            'status' => 'start',
+            'progress' => 0,
+            'users_progress' => 0,
+            'projects_progress' => 0,
+            'tasks_progress' => 0,
+        ]);
     }
 
     public function getStatus(Request $request)
@@ -37,9 +43,9 @@ class SyncController extends Controller
         $progress = intval(($users + $projects + $tasks) / 3);
         $status = $progress < 100 ? 'running' : 'done';
 
-        if ($request->header('X-Inertia')) {
-            return back(); 
-        }
+        // if ($request->header('X-Inertia')) {
+        //     return back(); 
+        // }
 
         return response()->json([
             'status' => $status,
@@ -49,4 +55,5 @@ class SyncController extends Controller
             'tasks_progress' => $tasks,
         ]);
     }
+
 }

@@ -70,6 +70,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('syncs', [SyncController::class, 'index'])->name('syncs.index');
     Route::post('syncs/start', [SyncController::class, 'start'])->name('syncs.start');
     Route::get('syncs/get-status', [SyncController::class, 'getStatus'])->name('syncs.get-status');
+
 });
 
 require __DIR__.'/settings.php';

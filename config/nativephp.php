@@ -137,7 +137,7 @@ return [
 
         'storage/framework/sessions',
 
-        'storage/framework/cache',
+        // 'storage/framework/cache', // Keep cache directory for NativePHP
 
         'storage/framework/testing',
 
@@ -206,5 +206,7 @@ return [
         'push_notifications' => false,
 
         'storage_read' => true,
+
+        'storage_write' => true,
     ]
 ];
