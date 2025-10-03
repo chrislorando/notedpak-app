@@ -47,6 +47,7 @@ import { customFormatDate, dateValueToString, stringToDateValue } from '@/lib/da
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
+import { useDebounceFn } from '@vueuse/core';
 import {
     ArrowUpDown,
     CalendarDays,
@@ -212,9 +213,9 @@ function deleteFile(task_id: string, file_id: string) {
     });
 }
 
-// const debouncedEdit = useDebounceFn((id: string) => {
-//     editTask(id);
-// }, 500);
+const debouncedEditTask = useDebounceFn((id: string) => {
+    editTask(id);
+}, 1000);
 
 function completeTask(id: string) {
     router.patch(
@@ -371,6 +372,9 @@ const copyTask = (taskId: string) => {
             onSuccess: function (result) {
                 selectedList.value = '';
                 lists.value = props.listOptions;
+                if (openTaskSheet.value) {
+                    setActiveTask(taskId);
+                }
                 toast.success('Task has been copied', {
                     description: Date().toString(),
                     icon: Check,
@@ -394,6 +398,9 @@ const moveTask = (taskId: string) => {
             onSuccess: function (result) {
                 selectedList.value = '';
                 lists.value = props.listOptions;
+                if (openTaskSheet.value) {
+                    setActiveTask(taskId);
+                }
                 toast.success('Task has been moved', {
                     description: Date().toString(),
                     icon: Check,
@@ -679,7 +686,7 @@ const onReorder = () => {
                 </div>
 
                 <div class="mb-2 flex w-full items-center justify-between rounded-sm p-2 shadow dark:bg-zinc-900">
-                    <Select :multiple="true" v-model="form.categories" @update:modelValue="editTask(activeTask.id)">
+                    <Select :multiple="true" v-model="form.categories" @update:modelValue="debouncedEditTask(activeTask.id)">
                         <SelectTrigger class="w-full border-0">
                             <div class="flex items-center gap-2">
                                 <Tag class="me-2 h-4 w-4" />
