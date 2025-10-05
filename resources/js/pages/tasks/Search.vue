@@ -37,7 +37,8 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { customFormatDate, dateValueToString, stringToDateValue } from '@/lib/date';
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem } from '@/types';
-import { Head, InfiniteScroll, router, useForm, usePage } from '@inertiajs/vue3';
+import { Head, router, useForm, usePage } from '@inertiajs/vue3';
+import { useDebounceFn } from '@vueuse/core';
 import {
     CalendarDaysIcon,
     Check,
@@ -138,6 +139,10 @@ const searchTasks = async () => {
     }, 1000);
 };
 
+const debouncedEditTask = useDebounceFn((id: string) => {
+    editTask(id);
+}, 500);
+
 function editTask(id: string) {
     form.due_date = selectedDueDate.value ? dateValueToString(selectedDueDate.value) : null;
     form.categories = JSON.stringify(form.categories);
@@ -145,10 +150,8 @@ function editTask(id: string) {
     form.put(route('tasks.update', id), {
         preserveScroll: true,
         preserveState: true,
-        // replace: true,
         onSuccess: () => {
             showSheet(id);
-            searchTasks();
         },
     });
 }
@@ -162,30 +165,44 @@ function uploadTaskFile(e: any, id: string) {
         onProgress: (progress) => {
             form.progress = progress ?? null;
         },
-        preserveScroll: false,
-        preserveState: false,
+        preserveScroll: true,
+        preserveState: true,
         replace: true,
+        reset: ['tasks'],
         onSuccess: function (result) {
             console.log('UPLOADED', result);
             form.progress = null;
-            if (openTaskSheet.value) {
-                setActiveTask(id);
-                searchTasks();
+            const scrollArea = document.querySelector('[data-radix-scroll-area-viewport]');
+            if (scrollArea) {
+                scrollArea.scrollTo({
+                    top: scrollArea.scrollHeight,
+                    behavior: 'smooth',
+                });
             }
+            setTimeout(() => {
+                showSheet(id);
+            }, 500);
         },
     });
 }
 
 function deleteFile(task_id: string, file_id: string) {
     router.delete(route('tasks.delete-file', file_id), {
-        preserveScroll: false,
-        preserveState: false,
+        preserveScroll: true,
+        preserveState: true,
         replace: true,
+        reset: ['tasks'],
         onSuccess: function (result) {
-            if (openTaskSheet.value) {
-                setActiveTask(task_id);
-                searchTasks();
+            const scrollArea = document.querySelector('[data-radix-scroll-area-viewport]');
+            if (scrollArea) {
+                scrollArea.scrollTo({
+                    top: scrollArea.scrollHeight,
+                    behavior: 'smooth',
+                });
             }
+            setTimeout(() => {
+                showSheet(task_id);
+            }, 500);
         },
     });
 }
@@ -195,16 +212,19 @@ function completeTask(id: string) {
         route('tasks.complete', id),
         {},
         {
-            preserveScroll: false,
-            preserveState: false,
-            replace: true,
+            preserveScroll: true,
+            preserveState: true,
             onSuccess: function (result) {
                 console.log('COMPLETED', result);
                 const audio = new Audio('/servant-bell-ring-2-211683.mp3');
                 audio.play();
+
                 if (openTaskSheet.value) {
                     setActiveTask(id);
-                    searchTasks();
+                }
+
+                if (openTaskSheet.value) {
+                    setActiveTask(id);
                 }
             },
         },
@@ -216,14 +236,12 @@ function bookmarkTask(id: string) {
         route('tasks.bookmark', id),
         {},
         {
-            preserveScroll: false,
-            preserveState: false,
-            replace: true,
+            preserveScroll: true,
+            preserveState: true,
             onSuccess: function (result) {
                 console.log('BOOKMARKED', result);
                 if (openTaskSheet.value) {
                     setActiveTask(id);
-                    searchTasks();
                 }
             },
         },
@@ -233,7 +251,7 @@ function bookmarkTask(id: string) {
 function deleteTask(id: string) {
     router.delete(route('tasks.destroy', id), {
         preserveScroll: true,
-        preserveState: true,
+        preserveState: false,
         onSuccess: function (result) {
             console.log('DESTROYED', result);
             openTaskSheet.value = false;
@@ -244,13 +262,19 @@ function deleteTask(id: string) {
 }
 
 function setActiveTask(id: string) {
-    const task = [...props.tasks.data].find((t) => t.id === id);
+    const task = [...(props.tasks || [])].find((t) => t.id === id);
+    console.log('Active Task', task);
+
+    if (!task) {
+        console.warn(`Task with ID ${id} not found`);
+        return;
+    }
+
     activeTask.value = task;
     form.description = task.description || '';
     form.note = task.note || '';
     form.categories = task.categories ? JSON.parse(task.categories).map((cat: any) => cat.value ?? cat) : [];
     if (task.due_date != null) {
-        console.log('Active Due Date', task.due_date);
         selectedDueDate.value = stringToDateValue(task.due_date);
     } else {
         selectedDueDate.value = undefined;
@@ -295,6 +319,8 @@ const copyTask = (taskId: string) => {
                     icon: Check,
                     duration: 5000,
                 });
+
+                return false;
             },
         },
     );
@@ -318,6 +344,8 @@ const moveTask = (taskId: string) => {
                     icon: Check,
                     duration: 5000,
                 });
+
+                return false;
             },
         },
     );
@@ -342,18 +370,21 @@ const moveTask = (taskId: string) => {
                     <p>What are you looking for?</p>
                 </div>
                 <div class="flex w-[calc(100%-20px)] flex-col gap-2">
-                    <InfiniteScroll v-if="tasks && tasks.data.length" :key="search" data="tasks" :buffer="500" only-next :auto-scroll="false" as="ul">
+                    <!-- <InfiniteScroll v-if="tasks && tasks.data.length" data="tasks" :buffer="500" as="ul"> -->
+                    <ul>
                         <li
                             @click.stop="showSheet(item.id)"
                             v-bind:key="item.id"
-                            v-for="item in tasks.data"
+                            v-for="item in tasks"
                             class="mb-2 flex items-center justify-between rounded-sm border p-4 shadow dark:bg-zinc-900"
                         >
                             <div class="flex items-start space-x-3">
                                 <Checkbox
+                                    :key="`checkbox-${item.id}-${item.is_completed}`"
                                     @click.stop
                                     @update:model-value="completeTask(item.id)"
                                     class="rounded-2xl border-foreground"
+                                    :default-value="item.is_completed ? true : false"
                                     :style="{ borderColor: item.project?.color ?? '' }"
                                 />
                                 <label class="text-sm leading-4 font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
@@ -402,7 +433,8 @@ const moveTask = (taskId: string) => {
                                 <Star :size="18" :fill="item.is_important ? item.project.color : ''" />
                             </button>
                         </li>
-                    </InfiniteScroll>
+                    </ul>
+                    <!-- </InfiniteScroll> -->
                 </div>
             </ScrollArea>
         </div>
@@ -416,14 +448,14 @@ const moveTask = (taskId: string) => {
                 <!-- <SheetDescription> Make changes to your task here. </SheetDescription> -->
             </SheetHeader>
 
-            <ScrollArea class="h-4/5 px-2">
+            <ScrollArea v-if="activeTask" class="h-4/5 px-2">
                 <div class="mb-2 flex w-full items-center justify-between rounded-sm p-4 shadow dark:bg-zinc-900">
                     <Checkbox
                         @click.stop
                         @update:model-value="completeTask(activeTask.id)"
                         class="me-4 items-center rounded-2xl border-foreground"
                         :default-value="activeTask.is_completed ? true : false"
-                        :style="{ borderColor: activeTask.project.color ?? '' }"
+                        :style="{ borderColor: activeTask.project?.color ?? '' }"
                     />
 
                     <div class="flex-1">
@@ -440,7 +472,7 @@ const moveTask = (taskId: string) => {
                     </div>
 
                     <button type="button" class="ms-4 text-gray-400 hover:text-yellow-500" @click.stop="bookmarkTask(activeTask.id)">
-                        <Star :fill="activeTask.is_important ? activeTask.project.color : ''" :size="18" />
+                        <Star :fill="activeTask.is_important ? activeTask.project?.color : ''" :size="18" />
                     </button>
                 </div>
 
@@ -456,7 +488,7 @@ const moveTask = (taskId: string) => {
                 </div>
 
                 <div class="mb-2 flex w-full items-center justify-between rounded-sm p-2 shadow dark:bg-zinc-900">
-                    <Select :multiple="true" v-model="form.categories" @update:modelValue="editTask(activeTask.id)">
+                    <Select :multiple="true" v-model="form.categories" @update:modelValue="debouncedEditTask(activeTask.id)">
                         <SelectTrigger class="w-full border-0">
                             <div class="flex items-center gap-2">
                                 <Tag class="me-2 h-4 w-4" />
@@ -500,7 +532,7 @@ const moveTask = (taskId: string) => {
                                     <div class="shrink-0">
                                         <div
                                             class="relative inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg"
-                                            :style="{ background: activeTask.project.color }"
+                                            :style="{ background: activeTask.project?.color }"
                                         >
                                             <span class="text-sm font-medium text-gray-900 uppercase">{{ file.extension }}</span>
                                         </div>
@@ -622,8 +654,8 @@ const moveTask = (taskId: string) => {
                 </SheetClose>
 
                 <div class="flex-1 text-center">
-                    <small v-if="activeTask.completed_at"> Completed on {{ activeTask.completed_at_formatted }} </small>
-                    <small v-else> Created on {{ activeTask.created_at_formatted }} </small>
+                    <small v-if="activeTask?.completed_at"> Completed on {{ activeTask.completed_at_formatted }} </small>
+                    <small v-else-if="activeTask?.created_at_formatted"> Created on {{ activeTask.created_at_formatted }} </small>
                 </div>
 
                 <AlertDialog>
@@ -632,7 +664,7 @@ const moveTask = (taskId: string) => {
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                         <AlertDialogHeader>
-                            <AlertDialogTitle>"{{ activeTask.description }}" will be permanently deleted.</AlertDialogTitle>
+                            <AlertDialogTitle>"{{ activeTask?.description }}" will be permanently deleted.</AlertDialogTitle>
                             <AlertDialogDescription> This won't be able to undo this action. </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>

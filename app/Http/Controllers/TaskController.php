@@ -9,6 +9,7 @@ use App\Models\TaskFiles;
 use Cache;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Redirect;
 use Storage;
 use Inertia\Inertia;
 use Str;
@@ -72,9 +73,9 @@ class TaskController extends Controller
                       });
                 });
             })
-            ->orderBy($sortBy, $sortOrder);
-            // ->limit(value: 50)
-            // ->get();
+            // ->orderBy($sortBy, $sortOrder);
+            ->limit(value: 50)
+            ->get();
 
     
         $projects = auth()->user()->projects()
@@ -91,8 +92,8 @@ class TaskController extends Controller
         ]);
 
         return Inertia::render('tasks/Search', [
-            // 'tasks' => $tasks,
-            'tasks' => Inertia::scroll(fn () => $tasks->paginate(5))
+            'tasks' => $tasks,
+            // 'tasks' => Inertia::scroll(fn () => $tasks->paginate(5))
         ]);
     }
 
@@ -202,9 +203,15 @@ class TaskController extends Controller
         $model->categories = $request->categories;
         $model->save();
 
-        // return redirect()->back()->with('task', $model);
-        // return redirect()->route('projects.show', $model->project->id)->with('success', 'Task created successfully.');
+        if ($request->header('X-Inertia')) {
+            return back(); 
+        }
 
+        return response()->json([
+            'success' => true,
+            'message' => 'Task updated successfully.',
+            'task' => $model
+        ]);
     }
 
     /**
@@ -340,12 +347,18 @@ class TaskController extends Controller
             $file->name = $request->file('attachment')->getClientOriginalName();
             $file->size = $request->file('attachment')->getSize();
             $file->url = Storage::url($path);
-            $file->save();  
+            if($file->save()){
+                // Preserve search and pagination parameters when redirecting
+                $redirectUrl = $request->header('referer', url()->previous());
+                return Redirect::to($redirectUrl)->with('success', 'File uploaded successfully.');
+            }
+            return Redirect::back()->with('error', 'Failed to upload file.');
         }
     }
 
     public function deleteFile(Request $request, $id)
     {
+
         $model = TaskFiles::where('id', $id)->firstOrFail();
         if ($model->url) {
             $parsedUrl = parse_url($model->url, PHP_URL_PATH);
@@ -359,7 +372,14 @@ class TaskController extends Controller
             $disk = config('filesystems.default', 's3');
             Storage::disk($disk)->delete($path);
         }
-        $model->delete();
+
+        if($model->delete()){
+            // Preserve search and pagination parameters when redirecting
+            $redirectUrl = $request->header('referer', url()->previous());
+            return Redirect::to($redirectUrl)->with('success', 'File deleted successfully.');
+        }
+
+        return Redirect::back()->with('error', 'Failed to delete file.');
     }
 
     public function reorder(Request $request)
