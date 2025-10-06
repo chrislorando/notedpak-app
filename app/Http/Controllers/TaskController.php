@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Redirect;
 use Storage;
 use Inertia\Inertia;
 use Str;
+use Native\Mobile\Facades\Camera;
 
 class TaskController extends Controller
 {
@@ -390,5 +391,10 @@ class TaskController extends Controller
             Task::where('id', $item['id'])
                 ->update(['position' => $item['position']]);
         }
+    }
+
+    public function gallery(string $media_type = 'all', bool $multiple = false, int $max_items = 5)
+    {
+        Camera::pickImages($media_type, $multiple, $max_items);
     }
 }

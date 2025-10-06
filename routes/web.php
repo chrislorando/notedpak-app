@@ -55,6 +55,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ]);
     })->name('tasks.download-file');
     Route::get('tasks/search-list-options', [TaskController::class, 'searchListOptions'])->name('tasks.search-list-options');
+    Route::get('tasks/gallery', [TaskController::class, 'gallery'])->name('tasks.gallery');
     Route::get('tasks/{id}', [TaskController::class, 'index'])->name('tasks.show');
     Route::post('tasks', [TaskController::class, 'store']);
     Route::put('tasks/{id}', [TaskController::class, 'update'])->name('tasks.update');

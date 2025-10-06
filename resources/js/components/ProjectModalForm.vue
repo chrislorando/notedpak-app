@@ -152,7 +152,7 @@ const closeModal = () => {
 
                             <InputError :message="form.errors.name" />
                         </div>
-                        <div class="grid items-center gap-4">
+                        <!-- <div class="grid items-center gap-4">
                             <Label for="description" class="text-left"> Description </Label>
 
                             <Input
@@ -165,7 +165,7 @@ const closeModal = () => {
                             />
 
                             <InputError :message="form.errors.description" />
-                        </div>
+                        </div> -->
 
                         <div class="grid items-center gap-4">
                             <Label for="color" class="text-left"> Color </Label>

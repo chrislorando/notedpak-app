@@ -62,7 +62,7 @@ class ProjectController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255|unique:projects,name,NULL,id,user_id,'.auth()->user()->id,
-            'description' => 'required|string|max:1000',
+            // 'description' => 'required|string|max:1000',
             'color' => 'nullable|string|max:1000',
         ]);
 
@@ -126,7 +126,7 @@ class ProjectController extends Controller
                     $query->where('user_id', auth()->id());
                 }),
             ],
-            'description' => 'required|string|max:1000',
+            // 'description' => 'required|string|max:1000',
             'color' => 'nullable|string|max:1000',
         ]);
 

@@ -166,7 +166,8 @@ return [
             'resources',
             'routes',
             'config',
-            'database'
+            'database',
+            'public'
         ],
 
         'exclude_patterns' => [

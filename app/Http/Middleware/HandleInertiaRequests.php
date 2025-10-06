@@ -7,6 +7,7 @@ use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Tighten\Ziggy\Ziggy;
+use Native\Mobile\Facades\System;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -59,6 +60,7 @@ class HandleInertiaRequests extends Middleware
                     ->get()
                 : [],
             'search' => $request->has('q') ? $request->get('q') : null,
+            'isAndroid' => System::isAndroid(),
         ];
     }
 }
