@@ -109,8 +109,8 @@ DB_URL=postgresql://DB_USER:DB_PASSWORD@DB_HOST:DB_PORT/DB_NAME
 # Note: Never commit .env files containing keys/secrets to a public repository.
 
 # MiniO
-AWS_ACCESS_KEY_ID=minioadmin
-AWS_SECRET_ACCESS_KEY=minioadmin
+AWS_ACCESS_KEY_ID=xxxxxxxx
+AWS_SECRET_ACCESS_KEY=xxxxxxxx
 AWS_DEFAULT_REGION=us-east-1
 AWS_BUCKET=todo
 AWS_ENDPOINT=https://xx.xxx.xxx

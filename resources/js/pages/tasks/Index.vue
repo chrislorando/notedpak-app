@@ -46,7 +46,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { customFormatDate, dateValueToString, stringToDateValue } from '@/lib/date';
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem } from '@/types';
-import { Head, router, useForm, usePage } from '@inertiajs/vue3';
+import { Head, router, useForm } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
 import {
     ArrowUpDown,
@@ -76,9 +76,7 @@ import draggable from 'vuedraggable';
 
 // Define props with TypeScript type
 const props = defineProps<{ project: any; draftTasks: any; completedTasks: any; categoryOptions: any; listOptions: any }>();
-const page = usePage();
 
-const isAndroid = ref<any>(Boolean(page.props.isAndroid ?? false));
 const initProject = ref<any>(props.project);
 const localDraftTasks = ref([...props.draftTasks]);
 const activeTask = ref();
@@ -128,21 +126,21 @@ onMounted(() => {
     document.body.classList.add('overflow-hidden');
 
     // Native::on('Native\\Mobile\\Events\\Camera\\PhotoTaken', ($path) => {}) ;
-    (window as any).Native?.on('Native\\Mobile\\Events\\Gallery\\MediaSelected', (payload: any) => {
-        console.log('received via window.Native.on', payload);
-        alert('received via window.Native.on: ' + JSON.stringify(payload));
-    });
+    // (window as any).Native?.on('Native\\Mobile\\Events\\Gallery\\MediaSelected', (payload: any) => {
+    //     console.log('received via window.Native.on', payload);
+    //     alert('received via window.Native.on: ' + JSON.stringify(payload));
+    // });
 
-    document.addEventListener('native-event', (e: any) => {
-        const detail = e?.detail;
-        if (!detail) return;
+    // document.addEventListener('native-event', (e: any) => {
+    //     const detail = e?.detail;
+    //     if (!detail) return;
 
-        if (detail.event === 'Native\\Mobile\\Events\\Gallery\\MediaSelected') {
-            const payload = detail.payload;
-            console.log('native-event payload', payload);
-            alert('received via window.Native.on: ' + JSON.stringify(payload));
-        }
-    });
+    //     if (detail.event === 'Native\\Mobile\\Events\\Gallery\\MediaSelected') {
+    //         const payload = detail.payload;
+    //         console.log('native-event payload', payload);
+    //         alert('received via window.Native.on: ' + JSON.stringify(payload));
+    //     }
+    // });
 });
 
 watch(
@@ -445,24 +443,6 @@ const onReorder = () => {
         },
     );
 };
-
-const gallery = (media_type: any) => {
-    alert('Gallery button clicked, will open native gallery if available.');
-    // console.log('GALLERY');
-    // router.get(
-    //     route('tasks.gallery'),
-    //     {
-    //         media_type: media_type,
-    //     },
-    //     {
-    //         preserveScroll: true,
-    //         preserveState: true,
-    //         onSuccess: function (result) {
-    //             console.log('GALLERY', result);
-    //         },
-    //     },
-    // );
-};
 </script>
 
 <template>
@@ -746,7 +726,7 @@ const gallery = (media_type: any) => {
                         <Input
                             type="file"
                             id="attachment"
-                            :class="['w-full resize-none border-0 pl-12', isAndroid ? 'hidden' : '']"
+                            class="w-full resize-none border-0 pl-12"
                             name="attachment"
                             placeholder="Add file"
                             @change="(e: any) => uploadTaskFile(e, activeTask.id)"
@@ -755,8 +735,6 @@ const gallery = (media_type: any) => {
                         <span class="absolute start-0 mt-2.5 flex items-center justify-center px-2">
                             <File class="ms-2 size-4 text-muted-foreground" />
                         </span>
-
-                        <Button type="button" variant="outline" :class="!isAndroid ? 'hidden' : ''" @click.stop="gallery('image')"> Gallery </Button>
 
                         <progress v-if="form.progress" :value="form.progress.percentage" max="100" class="mt-2 w-full rounded-full border">
                             {{ form.progress.percentage }}%
