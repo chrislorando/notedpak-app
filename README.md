@@ -51,7 +51,8 @@ This project serves both as a learning medium to deepen my understanding of mode
 - **NativePHP** – Enables cross-platform mobile app development from a web codebase
 - **Full-stack Architecture** – Seamless workflow from web to mobile, unified codebase
 - **SQLite** – Lightweight, file-based relational database for local development and mobile
-- **Supabase** – Open-source backend-as-a-service for authentication, real-time data, and cloud storage
+- **Supabase** – An open-source Backend as a Service (BaaS) platform built on PostgreSQL
+- **MinIO** - An open-source, high-performance object storage server that is S3-compatible
 
 ---
 
@@ -76,6 +77,7 @@ This project serves both as a learning medium to deepen my understanding of mode
 - SQLLITE
 - PostgreSQL
 - NativePHP
+- MiniO
 
 ---
 
@@ -104,8 +106,15 @@ SUPABASE_ANON_KEY=your-anon-key
 # For Postgres connection use DB_CONNECTION=pgsql and DB_URL as a connection string:
 DB_CONNECTION=pgsql
 DB_URL=postgresql://DB_USER:DB_PASSWORD@DB_HOST:DB_PORT/DB_NAME
-
 # Note: Never commit .env files containing keys/secrets to a public repository.
+
+# MiniO
+AWS_ACCESS_KEY_ID=minioadmin
+AWS_SECRET_ACCESS_KEY=minioadmin
+AWS_DEFAULT_REGION=us-east-1
+AWS_BUCKET=todo
+AWS_ENDPOINT=https://xx.xxx.xxx
+AWS_USE_PATH_STYLE_ENDPOINT=true
 
 ```
 
