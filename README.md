@@ -34,7 +34,7 @@ NotedPak is a modern to-do list application inspired by the spirit of discipline
 
 This project draws inspiration from Microsoft To Do's clean interface and functionality.
 
-This project serves both as a learning medium to deepen my understanding of modern web development technologies and as a showcase piece for my professional portfolio.
+This project serves both as a learning medium to deepen my understanding of modern web development technologies and as a showcase piece for my professional portfolio. It also aims to explore and experiment with NativePHP.
 
 ---
 
@@ -69,7 +69,7 @@ This project serves both as a learning medium to deepen my understanding of mode
 
 ## Requirements
 
-- PHP >= 8.4
+- PHP >= 8.3
 - Laravel >= 12.x
 - Composer
 - Node.js & NPM
@@ -128,6 +128,10 @@ php artisan migrate:fresh --seed
 chmod -R 775 storage
 chmod -R 775 bootstrap/cache
 ```
+
+## Demo Link
+
+https://notedpak.demolite.my.id/
 
 ## Credits
 
