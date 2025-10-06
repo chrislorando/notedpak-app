@@ -12,9 +12,11 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { customFormatDate } from '@/lib/date';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { AlertCircle, CalendarDays, List, ListChecks, ListIcon, ListTodo, NotebookText } from 'lucide-vue-next';
 import { onMounted } from 'vue';
+
+const page = usePage();
 
 onMounted(() => {
     console.log('ADD OVERFLOW 1');
@@ -29,7 +31,7 @@ onMounted(() => {
 
     router.on('navigate', (event) => {
         console.log('navigated to', event.detail.page.url);
-        if (event.detail.page.url == '/login' || event.detail.page.url == '/register') {
+        if ((event.detail.page.url == '/login' || event.detail.page.url == '/register') && page.props.auth.user != null) {
             history.pushState(null, '', location.href);
             router.visit('/dashboard', { replace: true });
         }
