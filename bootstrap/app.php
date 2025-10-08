@@ -16,11 +16,24 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
 
-        $middleware->web(append: [
-            HandleAppearance::class,
-            HandleInertiaRequests::class,
-            AddLinkHeadersForPreloadedAssets::class,
-        ]);
+        if (env('NATIVEPHP_APP_ID')) {
+
+            $middleware->validateCsrfTokens(except: ['*']);
+
+            $middleware->web(prepend: [
+                \App\Http\Middleware\NormalizeNativePhpRequest::class,
+            ], append: [
+                HandleAppearance::class,
+                HandleInertiaRequests::class,
+                AddLinkHeadersForPreloadedAssets::class,
+            ]);
+        } else {
+            $middleware->web(append: [
+                HandleAppearance::class,
+                HandleInertiaRequests::class,
+                AddLinkHeadersForPreloadedAssets::class,
+            ]);
+        }
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

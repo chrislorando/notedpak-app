@@ -6,7 +6,8 @@
         @if (config('app.env') === 'prod')
             <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
         @endif
-        {{-- <meta name="csrf-token" content="{{ csrf_token() }}"> --}}
+        
+        <meta name="csrf-token" content="{{ csrf_token() }}">
 
         {{-- Inline script to detect system dark mode preference and apply it immediately --}}
         <script>

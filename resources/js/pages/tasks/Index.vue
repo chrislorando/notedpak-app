@@ -141,6 +141,11 @@ onMounted(() => {
     //         alert('received via window.Native.on: ' + JSON.stringify(payload));
     //     }
     // });
+
+    window.addEventListener('native:Native\\Mobile\\Events\\Gallery\\MediaSelected', (e: any) => {
+        console.log('native-event payload', e);
+        alert('received via window.Native.on: ' + JSON.stringify(e));
+    });
 });
 
 watch(
@@ -443,6 +448,23 @@ const onReorder = () => {
         },
     );
 };
+
+const gallery = (id: string) => {
+    router.get(
+        route('tasks.gallery'),
+        {},
+        {
+            preserveScroll: true,
+            preserveState: true,
+            onSuccess: function (result) {
+                console.log('GALLERY', result);
+                if (openTaskSheet.value) {
+                    setActiveTask(id);
+                }
+            },
+        },
+    );
+};
 </script>
 
 <template>
@@ -739,6 +761,8 @@ const onReorder = () => {
                         <progress v-if="form.progress" :value="form.progress.percentage" max="100" class="mt-2 w-full rounded-full border">
                             {{ form.progress.percentage }}%
                         </progress>
+
+                        <!-- <Button variant="ghost" @click.stop="gallery(activeTask.id)">Open Gallery</Button> -->
 
                         <ul v-if="activeTask.attachments" class="ms-2 mt-2 max-w-md divide-y divide-gray-200 dark:divide-gray-700">
                             <li class="py-2 sm:py-2.5" v-for="file in activeTask.attachments">

@@ -13,6 +13,10 @@ use Illuminate\Http\Request;
 //     return Inertia::render('Welcome');
 // })->name('home');
 
+Route::get('/', function () {
+    return redirect()->route('dashboard');
+})->name('home');
+
 Route::get('/', [AuthenticatedSessionController::class, 'create'])->middleware(['guest'])->name('home');
 
 // Route::get('dashboard', function () {
@@ -20,7 +24,6 @@ Route::get('/', [AuthenticatedSessionController::class, 'create'])->middleware([
 // })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/', [DashboardController::class, 'index'])->name('home');
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('dashboard/sync', [DashboardController::class, 'sync'])->name('dashboard.sync');
     Route::get('dashboard/sync-status', [DashboardController::class, 'syncStatus'])->name('dashboard.sync-status');
