@@ -81,46 +81,20 @@ This project serves both as a learning medium to deepen my understanding of mode
 
 ---
 
-## Set up env
-
-```bash
-touch database/database.sqlite
-
-# Update .env with:
-# If using local SQLite (development / mobile local DB), use the example below:
-DB_CONNECTION=sqlite
-DB_DATABASE=/absolute/path/to/your/project/database/database.sqlite
-
-# NativePHP (Mobile App)
-# Use reverse-domain format for APP_ID, e.g., com.example.notedpak
-NATIVEPHP_APP_ID=com.example.notedpak
-NATIVEPHP_APP_VERSION=DEBUG
-NATIVEPHP_APP_VERSION_CODE=1
-
-# Supabase (Mobile / Public API client)
-# SUPABASE_ANON_KEY = public key for clients (anon). For testing use
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=your-anon-key
-
-# Supabase / PostgreSQL (Web / Data Center / Server)
-# For Postgres connection use DB_CONNECTION=pgsql and DB_URL as a connection string:
-DB_CONNECTION=pgsql
-DB_URL=postgresql://DB_USER:DB_PASSWORD@DB_HOST:DB_PORT/DB_NAME
-# Note: Never commit .env files containing keys/secrets to a public repository.
-
-# MiniO
-AWS_ACCESS_KEY_ID=xxxxxxxx
-AWS_SECRET_ACCESS_KEY=xxxxxxxx
-AWS_DEFAULT_REGION=us-east-1
-AWS_BUCKET=todo
-AWS_ENDPOINT=https://xx.xxx.xxx
-AWS_USE_PATH_STYLE_ENDPOINT=true
-
-```
-
 ## Instalation
 
 ```bash
+
+composer.json add:
+
+"repositories": [
+    {
+        "type": "composer",
+        "url": "https://nativephp.composer.sh"
+    }
+],
+
+
 composer install
 npm install
 npm run build
@@ -130,12 +104,52 @@ cp .env.example .env
 php artisan key:generate
 php artisan config:cache
 php artisan route:cache
-php artisan storage:link
 
 php artisan migrate:fresh --seed
 
 chmod -R 775 storage
 chmod -R 775 bootstrap/cache
+
+php artisan native:install
+php artisan native:run
+
+```
+
+Read the documentation of Nativephp
+https://nativephp.com/docs/mobile/1/getting-started/introduction
+
+## Set up env
+
+```bash
+touch database/database.sqlite
+
+# Update .env with:
+
+# If using local SQLite (mobile local DB), use the example below:
+DB_CONNECTION=sqlite
+DB_DATABASE=/absolute/path/to/your/project/database/database.sqlite
+
+# Supabase public API for backend (testing use)
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-anon-key
+
+# NativePHP (Mobile App)
+NATIVEPHP_APP_ID=com.example.notedpak
+NATIVEPHP_APP_VERSION=DEBUG
+NATIVEPHP_APP_VERSION_CODE=1
+
+# Supabase / PostgreSQL (Web / Data Center / Server)
+DB_CONNECTION=pgsql
+DB_URL=postgresql://DB_USER:DB_PASSWORD@DB_HOST:DB_PORT/DB_NAME
+
+# MiniO
+AWS_ACCESS_KEY_ID=xxxxxxxx
+AWS_SECRET_ACCESS_KEY=xxxxxxxx
+AWS_DEFAULT_REGION=us-east-1
+AWS_BUCKET=todo
+AWS_ENDPOINT=https://xx.xxx.xxx
+AWS_USE_PATH_STYLE_ENDPOINT=true
+
 ```
 
 ## Demo Link
