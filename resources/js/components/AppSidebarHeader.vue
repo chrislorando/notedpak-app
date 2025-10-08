@@ -51,7 +51,7 @@ watch(
             },
             {
                 preserveScroll: true,
-                preserveState: false,
+                preserveState: true,
                 replace: true,
             },
         );

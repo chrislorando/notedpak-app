@@ -8,9 +8,11 @@ import { Label } from '@/components/ui/label';
 import AuthBase from '@/layouts/AuthLayout.vue';
 import { Head, router, useForm, usePage } from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';
-import { onBeforeMount } from 'vue';
+import { onBeforeMount, ref } from 'vue';
 
 const page = usePage();
+const token = ref(String(page.props.csrfToken ?? ''));
+
 onBeforeMount(() => {
     console.log('Mounted Login:', page.props.auth);
     if (page.props.auth?.user) {
@@ -31,6 +33,11 @@ const form = useForm({
 
 const submit = () => {
     form.post(route('login'), {
+        headers: {
+            _token: token.value,
+            'X-CSRF-TOKEN': token.value,
+        },
+        replace: true,
         onFinish: () => form.reset('password'),
     });
 };

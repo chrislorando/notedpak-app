@@ -18,7 +18,7 @@ const { toggleSidebar, isMobile, state } = useSidebar();
         <SidebarMenu>
             <SidebarMenuItem v-for="item in items" :key="item.title">
                 <SidebarMenuButton as-child :is-active="item.href === page.url" :tooltip="item.title">
-                    <Link :href="item.href" preserveState :preserveScroll="true" @click="isMobile ? toggleSidebar() : null">
+                    <Link :href="item.href" preserveState :preserveScroll="true" @click="isMobile ? toggleSidebar() : null" replace>
                         <component :is="item.icon" />
                         <span>{{ item.title }}</span>
                     </Link>

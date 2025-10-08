@@ -10,6 +10,9 @@ interface Props {
 }
 
 const handleLogout = () => {
+    router.clearHistory();
+    // ensure browser entry is login
+    window.history.replaceState(null, '', '/login');
     router.flushAll();
 };
 
@@ -33,7 +36,7 @@ defineProps<Props>();
     </DropdownMenuGroup>
     <DropdownMenuSeparator />
     <DropdownMenuItem :as-child="true">
-        <Link class="block w-full" method="post" :href="route('logout')" @click="handleLogout" as="button">
+        <Link class="block w-full" method="post" :href="route('logout')" @click="handleLogout" as="button" replace>
             <LogOut class="mr-2 h-4 w-4" />
             Log out
         </Link>

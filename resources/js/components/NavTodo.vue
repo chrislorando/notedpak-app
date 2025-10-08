@@ -63,7 +63,7 @@ const onReorder = () => {
                 <template #item="{ element: item }">
                     <SidebarMenuItem>
                         <SidebarMenuButton as-child :is-active="item.href === page.url" :tooltip="item.title">
-                            <Link :href="item.href" preserveState :preserveScroll="true" @click="isMobile ? toggleSidebar() : null">
+                            <Link :href="item.href" preserveState :preserveScroll="true" @click="isMobile ? toggleSidebar() : null" replace>
                                 <component :is="item.icon" :style="item.color ? { color: item.color } : undefined" />
                                 <span>{{ item.title }}</span>
                             </Link>
