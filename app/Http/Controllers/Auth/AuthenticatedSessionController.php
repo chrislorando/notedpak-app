@@ -74,15 +74,16 @@ class AuthenticatedSessionController extends Controller
             $request->authenticate();
             $request->session()->regenerate();
 
-            Inertia::clearHistory();
+            // Inertia::clearHistory();
             return to_route('syncs.index');
            
         }else{
             $request->authenticate();
             $request->session()->regenerate();
             
-            Inertia::clearHistory();
-            return redirect()->intended(route('dashboard', absolute: false));
+            // Inertia::clearHistory();
+            // return redirect()->intended(route('dashboard', absolute: false));
+            return to_route('dashboard');
 
         }
        
@@ -95,6 +96,8 @@ class AuthenticatedSessionController extends Controller
     public function destroy(Request $request): RedirectResponse
     {
         Auth::guard('web')->logout();
+
+        // Inertia::clearHistory();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();

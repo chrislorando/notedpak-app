@@ -85,13 +85,13 @@ class RegisteredUserController extends Controller
                 }
             }
 
-            Inertia::clearHistory();
+            // Inertia::clearHistory();
             return redirect(route('syncs.index', absolute: false));
         }else{
             $user = User::create($payload);
             event(new Registered($user));
 
-            Inertia::clearHistory();
+            // Inertia::clearHistory();
             return to_route('dashboard');
         }
         
