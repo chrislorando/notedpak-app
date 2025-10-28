@@ -7,17 +7,24 @@ import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/AppLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { type BreadcrumbItem, type User } from '@/types';
-import { onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
 
 interface Props {
     mustVerifyEmail: boolean;
     status?: string;
+    latestToken?: {
+        id: string;
+        name: string;
+        token: string;
+        created_at: string;
+    };
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -34,16 +41,65 @@ const form = useForm({
     email: user.email,
 });
 
+const tokenForm = useForm({
+    token_name: '',
+});
+
+const generatedToken = ref<string | null>(null);
+const tokenInfo = ref<{ name: string; created_at: string; token: string } | null>(null);
+const showToken = ref(false);
+
 const submit = () => {
     form.patch(route('profile.update'), {
         preserveScroll: true,
     });
 };
 
+const generateToken = () => {
+    const timestamp = new Date().toLocaleString();
+    tokenForm.token_name = `Token ${timestamp}`;
+
+    tokenForm.post(route('profile.generate-token'), {
+        preserveScroll: true,
+        onFinish: () => {
+            // Setelah redirect selesai, ambil latestToken dari page props
+            const latestToken = page.props.latestToken as any;
+            if (latestToken) {
+                tokenInfo.value = {
+                    name: latestToken.name,
+                    token: latestToken.token,
+                    created_at: latestToken.created_at,
+                };
+                showToken.value = true;
+            }
+            tokenForm.reset();
+        },
+    });
+};
+
+const copyToken = () => {
+    if (tokenInfo.value?.token) {
+        navigator.clipboard.writeText(tokenInfo.value.token);
+    }
+};
+
 onMounted(() => {
     console.log('REMOVE OVERFLOW');
     window.scrollTo(0, 0);
     document.body.classList.remove('overflow-hidden');
+
+    // Load latest token from database
+    if (props.latestToken) {
+        console.log(props.latestToken);
+        tokenInfo.value = {
+            name: props.latestToken.name,
+            token: props.latestToken.token,
+            created_at: props.latestToken.created_at,
+        };
+        // Show plaintext token for new tokens or recently generated
+        generatedToken.value = props.latestToken.token;
+        showToken.value = true;
+    }
 });
 </script>
 
@@ -107,6 +163,39 @@ onMounted(() => {
                         </Transition>
                     </div>
                 </form>
+            </div>
+
+            <div class="flex flex-col space-y-6">
+                <HeadingSmall title="API Token" description="Generate an API token for accessing the application programmatically" />
+
+                <div class="space-y-6">
+                    <div class="flex items-center gap-4">
+                        <Button type="button" @click="generateToken" :disabled="tokenForm.processing">Generate Token</Button>
+                    </div>
+
+                    <div
+                        v-if="showToken && tokenInfo?.token"
+                        class="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-900 dark:bg-blue-950"
+                    >
+                        <div class="mb-4">
+                            <p class="mb-3 text-sm font-semibold text-blue-900 dark:text-blue-100">
+                                Your API Token (Copy it now, you won't see it again)
+                            </p>
+                            <div class="flex items-center gap-2">
+                                <Textarea v-model="tokenInfo.token" readonly class="font-mono text-xs" rows="1" />
+
+                                <Button type="button" @click="copyToken" variant="outline" class="shrink-0">Copy</Button>
+                            </div>
+                        </div>
+
+                        <div class="border-t border-blue-200 pt-4 dark:border-blue-800">
+                            <p class="text-sm text-blue-900 dark:text-blue-100"><strong>Token Name:</strong> {{ tokenInfo.name }}</p>
+                            <p class="text-sm text-blue-900 dark:text-blue-100">
+                                <strong>Created:</strong> {{ new Date(tokenInfo.created_at).toLocaleString() }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <DeleteUser />

@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
+use Str;
 
 class ProfileController extends Controller
 {
@@ -18,9 +19,21 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): Response
     {
+        $latestToken = $request->user()->tokens()->latest()->first();
+        
+        // Ambil plaintext token dari session jika ada (dari generateToken)
+        $plainTextToken = $request->session()->get('plainTextToken');
+
         return Inertia::render('settings/Profile', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => $request->session()->get('status'),
+            'latestToken' => $latestToken ? [
+                'id' => $latestToken->id,
+                'name' => $latestToken->name,
+                'token' => $plainTextToken,
+                'created_at' => $latestToken->created_at,
+            ] : null,
+            
         ]);
     }
 
@@ -38,6 +51,23 @@ class ProfileController extends Controller
         $request->user()->save();
 
         return to_route('profile.edit');
+    }
+
+    /**
+     * Generate API token for the user.
+     */
+    public function generateToken(Request $request)
+    {
+        $request->validate([
+            'token_name' => ['required', 'string', 'max:255'],
+        ]);
+
+        $request->user()->tokens()->delete();
+        $token = $request->user()->createToken('token-'.$request->user()->id);
+
+        return to_route('profile.edit')
+            ->with('plainTextToken', $token->plainTextToken)
+            ->with('success', 'Token generated successfully');
     }
 
     /**
