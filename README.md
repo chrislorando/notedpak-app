@@ -64,7 +64,68 @@ This project serves both as a learning medium to deepen my understanding of mode
 🌐 Responsive Design: Works perfectly on desktop, tablet, and mobile  
 📊 Progress Tracking: Monitor your productivity and task completion rates  
 🔄 Data Sync: Keep your tasks synchronized across all devices  
-📦 Drag & Drop: Reorder lists or projects, and tasks with intuitive drag-and-drop interactions
+📦 Drag & Drop: Reorder lists or projects, and tasks with intuitive drag-and-drop interactions  
+🤖 MCP Server: Model Context Protocol server
+
+---
+
+## MCP Server
+
+This application includes a Model Context Protocol (MCP) server that allows AI clients (like GitHub Copilot, ChatGpt, Claude, etc) to interact with your tasks and projects.
+
+### Available Tools
+
+**Project Management:**
+
+- `list-projects` - List all projects
+- `create-project` - Create a new project
+- `update-project` - Update project details
+- `delete-project` - Delete a project
+- `search-projects` - Search projects by name or description
+
+**Task Management:**
+
+- `list-tasks` - List all tasks
+- `create-task` - Create a new task
+- `update-task` - Update task details
+- `complete-task` - Mark task as completed
+- `delete-task` - Delete a task
+- `search-tasks` - Search tasks by description
+
+### Setup MCP Server
+
+1. **Configure Bearer Token** in `.vscode/mcp.json`:
+
+```json
+{
+    "servers": {
+        "todo-mcp-server": {
+            "url": "http://inertia-vue-todo-app.test/mcp/todo",
+            "type": "http",
+            "headers": {
+                "Authorization": "Bearer YOUR_API_TOKEN_HERE"
+            }
+        }
+    },
+    "inputs": []
+}
+```
+
+2. **Generate API Token** in Profile Settings:
+    - Navigate to `/settings/profile`
+    - Click "Generate Token" button
+    - Copy the plaintext token and add it to `mcp.json`
+
+3. **Use with GitHub Copilot**:
+    - After setup, GitHub Copilot will have access to all MCP tools
+    - You can ask Copilot to create tasks, search projects, update tasks, etc.
+
+### Authentication
+
+The MCP server uses Laravel Sanctum for authentication. Ensure you have:
+
+- Generated an API token from profile settings
+- Added the token to your MCP client configuration with `Authorization: Bearer <token>` header
 
 ---
 
