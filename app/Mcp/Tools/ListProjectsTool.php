@@ -27,13 +27,21 @@ class ListProjectsTool extends Tool
      */
     public function handle(Request $request): Response
     {
-        $projects = Project::all()->map(fn ($project) => [
-            'id' => $project->id,
-            'name' => $project->name,
-            'description' => $project->description,
-            'created_at' => $project->created_at,
-            'updated_at' => $project->updated_at,
-        ])->toArray();
+        $user = auth()->user();
+        
+        if (!$user) {
+            return Response::text('Error: Unauthenticated');
+        }
+
+        $projects = Project::where('user_id', $user->id)
+            ->get()
+            ->map(fn ($project) => [
+                'id' => $project->id,
+                'name' => $project->name,
+                'description' => $project->description,
+                'created_at' => $project->created_at,
+                'updated_at' => $project->updated_at,
+            ])->toArray();
 
         return Response::text(json_encode($projects, JSON_PRETTY_PRINT));
     }

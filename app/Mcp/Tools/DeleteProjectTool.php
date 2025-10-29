@@ -27,16 +27,24 @@ class DeleteProjectTool extends Tool
      */
     public function handle(Request $request): Response
     {
+        $user = auth()->user();
+        
+        if (!$user) {
+            return Response::text('Error: Unauthenticated');
+        }
+
         $id = $request->get('id');
 
         if (empty($id)) {
             return Response::text('Error: Project ID is required');
         }
 
-        $project = Project::find($id);
+        $project = Project::where('user_id', $user->id)
+            ->where('id', $id)
+            ->first();
 
         if (!$project) {
-            return Response::text('Error: Project not found');
+            return Response::text('Error: Project not found or unauthorized');
         }
 
         $projectName = $project->name;

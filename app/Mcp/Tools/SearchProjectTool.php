@@ -27,14 +27,23 @@ class SearchProjectTool extends Tool
      */
     public function handle(Request $request): Response
     {
+        $user = auth()->user();
+        
+        if (!$user) {
+            return Response::text('Error: Unauthenticated');
+        }
+
         $query = $request->get('query');
 
         if (empty($query)) {
             return Response::text('Error: Search query is required');
         }
 
-        $projects = Project::where('name', 'like', "%{$query}%")
-            ->orWhere('description', 'like', "%{$query}%")
+        $projects = Project::where('user_id', $user->id)
+            ->where(function ($q) use ($query) {
+                $q->where('name', 'like', "%{$query}%")
+                  ->orWhere('description', 'like', "%{$query}%");
+            })
             ->get()
             ->map(fn ($project) => [
                 'id' => $project->id,

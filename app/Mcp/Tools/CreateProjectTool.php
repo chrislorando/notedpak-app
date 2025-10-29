@@ -27,6 +27,12 @@ class CreateProjectTool extends Tool
      */
     public function handle(Request $request): Response
     {
+        $user = auth()->user();
+        
+        if (!$user) {
+            return Response::text('Error: Unauthenticated');
+        }
+
         $name = $request->get('name');
         $description = $request->get('description');
 
@@ -37,6 +43,7 @@ class CreateProjectTool extends Tool
         $project = Project::create([
             'name' => $name,
             'description' => $description,
+            'user_id' => $user->id,
         ]);
 
         return Response::text(json_encode([

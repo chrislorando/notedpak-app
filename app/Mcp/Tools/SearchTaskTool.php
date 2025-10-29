@@ -27,13 +27,20 @@ class SearchTaskTool extends Tool
      */
     public function handle(Request $request): Response
     {
+        $user = auth()->user();
+        
+        if (!$user) {
+            return Response::text('Error: Unauthenticated');
+        }
+
         $query = $request->get('query');
 
         if (empty($query)) {
             return Response::text('Error: Search query is required');
         }
 
-        $tasks = Task::where('description', 'like', "%{$query}%")
+        $tasks = Task::where('owner_id', $user->id)
+            ->where('description', 'like', "%{$query}%")
             ->get()
             ->map(fn ($task) => [
                 'id' => $task->id,

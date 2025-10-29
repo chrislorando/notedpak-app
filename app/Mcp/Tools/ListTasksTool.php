@@ -28,14 +28,22 @@ class ListTasksTool extends Tool
      */
     public function handle(Request $request): Response
     {
-         $todos = Task::all()->map(fn ($todo) => [
-            'id' => $todo->id,
-            'project_name' => $todo->project->name,
-            'description' => $todo->description,
-            'is_completed' => $todo->is_completed,
-            'created_at' => $todo->created_at,
-            'updated_at' => $todo->updated_at,
-        ])->toArray();
+        $user = auth()->user();
+        
+        if (!$user) {
+            return Response::text('Error: Unauthenticated');
+        }
+
+        $todos = Task::where('owner_id', $user->id)
+            ->get()
+            ->map(fn ($todo) => [
+                'id' => $todo->id,
+                'project_name' => $todo->project->name,
+                'description' => $todo->description,
+                'is_completed' => $todo->is_completed,
+                'created_at' => $todo->created_at,
+                'updated_at' => $todo->updated_at,
+            ])->toArray();
 
         return Response::text(json_encode($todos, JSON_PRETTY_PRINT));
     }

@@ -27,6 +27,12 @@ class CreateTaskTool extends Tool
      */
     public function handle(Request $request): Response
     {
+        $user = auth()->user();
+        
+        if (!$user) {
+            return Response::text('Error: Unauthenticated');
+        }
+
         $description = $request->get('description');
         $project_id = $request->get('project_id');
         $is_completed = $request->get('is_completed', false);
@@ -39,6 +45,7 @@ class CreateTaskTool extends Tool
             'description' => $description,
             'project_id' => $project_id,
             'is_completed' => $is_completed,
+            'owner_id' => $user->id,
         ]);
 
         return Response::text(json_encode([
