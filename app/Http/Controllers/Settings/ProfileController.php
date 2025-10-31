@@ -66,7 +66,7 @@ class ProfileController extends Controller
         $token = $request->user()->createToken('token-'.$request->user()->id);
 
         return to_route('profile.edit')
-            ->with('plainTextToken', $token->plainTextToken)
+            ->with('plainTextToken', $token->accessToken)
             ->with('success', 'Token generated successfully');
     }
 

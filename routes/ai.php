@@ -7,4 +7,7 @@ Mcp::local('todo', \App\Mcp\Servers\TodoServer::class);
 
 // HTTP MCP server with Sanctum authentication
 // Note: Use Bearer token in Authorization header instead of OAuth flow
-Mcp::web('/mcp/todo', \App\Mcp\Servers\TodoServer::class)->middleware(['auth:sanctum']);
+// Mcp::web('/mcp/todo', \App\Mcp\Servers\TodoServer::class)->middleware([\App\Http\Middleware\McpDevAuth::class]);
+
+Mcp::oauthRoutes();
+Mcp::web('/mcp/todo', \App\Mcp\Servers\TodoServer::class)->middleware(['auth:api']);
